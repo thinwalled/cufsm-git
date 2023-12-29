@@ -1,0 +1,85 @@
+function [clas_gdlo]=mode_class(b_v,displ,ngm,ndm,nlm,hwn,ndof_m,couple)
+%
+%to determine mode contribution in the current displacement
+
+%input data
+%   b_v - base vectors (each column corresponds to a certain mode)
+%           columns 1..ngm: global modes
+%           columns (ngm+1)..(ngm+ndm): dist. modes
+%           columns (ngm+ndm+1)..(ngm+ndm+nlm): local modes
+%           columns (ngm+ndm+nlm+1)..ndof: other modes
+%   displ - vector of nodal displacements
+%   ngm,ndm,nlm - number of global, distortional and local buckling modes, respectively
+%   couple - by GBTcon.couple, coupled basis vs uncoupled basis for general B.C. especially for non-simply supported B.C.
+%         1: uncoupled basis, the basis will be block diagonal
+%         2: coupled basis, the basis is fully spanned
+
+%output data
+%   clas_gdlo - array with the contributions of the modes in percentage
+%               elem1: global, elem2: dist, elem3: local, elem4: other
+
+% S. Adany, Mar 10, 2004
+% Z. Li, June 2010
+
+totalm = length(hwn); %Total number of longitudinal terms m
+%indices
+dofindex(1,1)=1;
+dofindex(1,2)=ngm;
+dofindex(2,1)=ngm+1;
+dofindex(2,2)=ngm+ndm;
+dofindex(3,1)=ngm+ndm+1;
+dofindex(3,2)=ngm+ndm+nlm;
+dofindex(4,1)=ngm+ndm+nlm+1;
+dofindex(4,2)=ndof_m;
+
+if couple==1
+    % uncoupled basis
+    %L1 norm
+    clas=b_v\displ;
+    clas=abs(clas);
+    for i=1:4
+        for j=1:totalm
+            cl_gdlo(i,j)=sum(clas((j-1)*ndof_m+dofindex(i,1):(j-1)*ndof_m+dofindex(i,2)));
+        end
+        clas_gdlo(i)=sum(cl_gdlo(i,:));
+    end
+    clas_gdlo=clas_gdlo/sum(clas)*100;
+    
+    % L2 norm
+    for ml=1:totalm
+        b_v_m=b_v((ndof_m*(ml-1)+1):ndof_m*ml,(ndof_m*(ml-1)+1):ndof_m*ml);
+        
+        %classification
+        clas(dofindex(1,1):dofindex(4,2))=b_v_m(:,dofindex(1,1):dofindex(4,2))\displ((ndof_m*(ml-1)+1):ndof_m*ml);
+
+        % L2 norm
+        for i=1:4
+            NModes=dofindex(i,2)-dofindex(i,1)+1;
+            cl_gdlo(i,(ml-1)*NModes+1:(ml-1)*NModes+NModes)=clas(dofindex(i,1):dofindex(i,2));
+        end
+    end
+    
+    
+    % L2 norm
+    for mn=1:4
+        clas_gdlo(mn)=norm(cl_gdlo(mn,:));
+    end
+    NormSum=sum(clas_gdlo);
+    clas_gdlo=clas_gdlo/NormSum*100;    
+else
+    % coupled basis
+    
+    %classification
+    clas=b_v\displ;
+    
+    %L2 norm
+    for i=1:4
+        for j=1:totalm
+            NModes=dofindex(i,2)-dofindex(i,1)+1;
+            v_gdlo(i,(j-1)*NModes+1:(j-1)*NModes+NModes)=clas((j-1)*ndof_m+dofindex(i,1):(j-1)*ndof_m+dofindex(i,2));
+        end
+        clas_gdlo(i)=norm(v_gdlo(i,:));
+    end
+    NormSum=sum(clas_gdlo);
+    clas_gdlo=clas_gdlo/NormSum*100;
+end
