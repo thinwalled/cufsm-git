@@ -174,7 +174,7 @@ if clasopt
 %     end
     %   	legend(hc,'global','distortional','local','other')
 else
-    h=legend(hndlmark,filenamecell{filedisplay},'Location','best');
+    h=legend(hndlmark,filenamecell{filedisplay},'Location','best','AutoUpdate','Off');
     %don't use latex in the legend so underscores are written ok
     releasestring=version('-release');
     release=str2num(releasestring);

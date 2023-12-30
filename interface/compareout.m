@@ -20,6 +20,7 @@ global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_loca
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
 %
 %Set up the figure title and menu
+hold off
 clf
 name=['CUFSM v',version,' -- Finite Strip Post-Processor'];
 set(fig,'Name',name);
@@ -121,7 +122,7 @@ files=(1:1:i-1);
 axes2dshape=axes('Units','normalized','Position',[0.30 0.63 0.3 0.32],'visible','off');
 axes2dshapelarge=axes('Units','normalized','Position',[0.30 0.63 0.6 0.32],'visible','on');
 axes3dshape=axes('Units','normalized','Position',[0.65 0.63 0.3 0.32],'visible','off');
-axescurve=axes('Units','normalized','Position',[0.34 0.07 0.63 0.43],'Box','on','XTickLabel','','YTickLabel','');
+axescurve=axes('Units','normalized','Position',[0.34 0.07 0.63 0.43],'Box','on','XTickLabel','','YTickLabel','','visible','on');
 %for load factor vs mode number and participation of lonitudinal terms
 axesparticipation=axes('Units','normalized','Position',[0.34 0.37 0.62 0.14],'Box','on','XTickLabel','','YTickLabel','','visible','off');
 axescurvemode=axes('Units','normalized','Position',[0.34 0.07 0.62 0.23],'Box','on','XTickLabel','','YTickLabel','','visible','off');
@@ -219,6 +220,7 @@ end
 
 %%GUI CONTROLS FOLLOW
 %-------------------
+
 %
 box1=uicontrol(fig,...
     'Style','frame','units','normalized',...
@@ -730,5 +732,7 @@ btn_cfsmhelp=uicontrol(fig,...
     'String','?',...
     'Callback',[...
     'cufsmhelp(22);']);
+
+
 
 

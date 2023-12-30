@@ -30,7 +30,6 @@ zmax=max(node(:,3));
 if nargin<10|isempty(ifpatch)
     ifpatch=0;
 end
-axis([xmin xmax ymin ymax zmin zmax]);
 %
 %
 %Determine a scaling factor for the displaced shape
@@ -236,5 +235,5 @@ view(37.5,30)
 %hold off
 %
 hold(axesnum,'off')
-set(axesnum,'visible','off')
+set(axesnum,'visible','on')
 %watchoff
