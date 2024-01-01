@@ -82,7 +82,16 @@ if ifcheck3d==1
     mode=shapes{lengthindex}(:,modeindex);
     undefv=get(undef,'Value');
     ifpatch=get(checkpatch,'Value');
-    dispshp2(undefv,lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,ifpatch);
+	
+	if undefv
+		Item3D=3;%Deformed shape & undeformed mesh
+	else
+		Item3D=1;%Deformed shape only
+	end
+	Data3D=1;%Vector sum of Displacement
+	ifColorBar=1;%draw color bar
+    dispshp2(lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+%    dispshp2(undefv,lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,ifpatch);
 %     dispshap3dwaxial(undefv,lengths(lengthindex),node,elem,mode,axesshape,scale);	
 else
     axes(axes3dshape);
@@ -517,7 +526,16 @@ if ifcheck3d
     set(subfig3d,'position',[100 100 500 300])%
     axescapture3d=axes('Units','normalized','Position',[0.01 0.09 0.98 0.91],'visible','off');	  
     ifpatch=get(checkpatch,'Value');
-    dispshp2(undefv,lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,ifpatch);
+
+	if undefv
+		Item3D=3;%Deformed shape & undeformed mesh
+	else
+		Item3D=1;%Deformed shape only
+	end
+	Data3D=1;%Vector sum of Displacement
+	ifColorBar=1;%draw color bar
+    dispshp2(lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+	%dispshp2(undefv,lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,ifpatch);
     label_title=uicontrol(subfig3d,...
         'Style','text','units','normalized',...
         'Position',[0.01 0.02 .98 .05],...

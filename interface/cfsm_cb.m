@@ -368,11 +368,24 @@ switch num
         ndof_m=4*length(node(:,1));%length([GBTcon.glob,GBTcon.dist,GBTcon.local,GBTcon.other])
         if GBTcon.couple==1
             mode=b_v_view((longitermindex-1)*ndof_m+1:1:longitermindex*ndof_m,modeindex);
-            dispshp2(0,a,node,elem,mode,axes3d,scale,m_a(longitermindex),BC,ifpatch)
+
+			Item3D=1;%Deformed shape only
+			Data3D=1;%Vector sum of Displacement
+			ifColorBar=0;%no color bar
+			dispshp2(a,node,elem,mode,axes3d,scale,m_a(longitermindex),BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+
+			%dispshp2(0,a,node,elem,mode,axes3d,scale,m_a(longitermindex),BC,ifpatch)
         elseif GBTcon.couple==2
             mode=b_v_view(:,modeindex);
-            dispshp2(0,a,node,elem,mode,axes3d,scale,m_a,BC,ifpatch)
-        end
+
+			Item3D=1;%Deformed shape only
+			Data3D=1;%Vector sum of Displacement
+			ifColorBar=0;%no color bar
+			dispshp2(a,node,elem,mode,axes3d,scale,m_a,BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+            %dispshp2(0,a,node,elem,mode,axes3d,scale,m_a,BC,ifpatch)
+		
+		
+		end
         %
         %---------------------------------------------------
     case 101

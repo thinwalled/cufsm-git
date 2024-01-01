@@ -1,240 +1,491 @@
-function []=dispshp2(undef,L,node,elem,mode,axesnum,scalem,m_a,BC,ifpatch)
+function []=dispshp2(L,node,elem,mode,axesnum,scalem,m_a,BC,ifpatch,Item3D,color4what_3D,ifSurface,ifColorBar)
 %BWS
 %1998 originated
 %2010 BWS and Z.Li improvements for speed and generality
-%
+%Jan 2024. S. Jin. 3D surface graphics objects are used for speed
 %L=length
 %node: [node# x z dofx dofz dofy dofrot stress] nnodes x 8;
 %elem: [elem# nodei nodej t] nelems x 4;
 %mode: vector of displacements global dof [u1 v1...un vn w1 01...wn 0n]'
-%
-wait_message=waitbar(0,'slower for long length or many longitudinal terms','Name','Plotting the 3D shape.' );
+%Item3D: objects to be plotted: 1 - Deformed shape only, 2 - Undeformed shape only, 3 - Deformed shape & undeformed mesh
+%color4what_3D: the value used to render the color of the surface.
+	%1: Vector sum of Displacement, 2: X-Component of displacement, 3: Y-Component of displacement, 4: Z-Component of displacement
+	%5: Y-Component of Normal Strain, 6: In-strip-plane of Shear Strain
+	%7: No Color
+%ifSurface: surface(1) or mesh(0)
+%ifColorBar: display a vertical colorbar or not
 
-% set(wait_message,'WindowStyle','modal')
-%watchon;
+%To determine the ergodic path(s) of the cross-section, "Euler path"
+listNd=node(:,1);%list of the nodes
+listEdge=elem(:,1:3);%list of the edges
+nNd=size(listNd,1);%number of nodes
+nEdge=size(listEdge,1);%number of edges
+PathNodes={};%Node sequence on the path(s).The paths traverse over all the nodes with no overlap
+PathElems={};%element sequence on the path(s)
+PathDirects={};%is the element direction consistent to the path direction? 
+while size(listEdge,1)>=1
+	curPathNodes=[];
+	curPathElems=[];
+	curPathDirects=[];
+	
+	curPathNodes=listEdge(1,2:3);%just get one
+	curPathElems=listEdge(1,1);
+	curPathDirects=true;
+	listEdge(1,:)=[];
+
+	while 1
+		%number of the remainder edge(s) connect to the current end point of the path
+		[rowB,colB]=find(listEdge(:,2:3)==curPathNodes(end),2);
+		if length(rowB)==1%only one edge left
+			curPathNodes(end+1)=listEdge(rowB,4-colB);
+			curPathElems(end+1)=listEdge(rowB,1);
+			curPathDirects(end+1)=(colB==1);
+			listEdge(rowB,:)=[];
+			continue
+		end
+		%number of the remainder edge(s) connecting to the current start point of the path
+		[rowA,colA]=find(listEdge(:,2:3)==curPathNodes(1),2);
+		if length(rowA)==1%no other choice
+			curPathNodes=horzcat(listEdge(rowA,4-colA),curPathNodes);
+			curPathElems=[listEdge(rowA,1),curPathElems];
+			curPathDirects=[(colA==2),curPathDirects];
+			listEdge(rowA,:)=[];
+			continue
+		end
+		if length(rowB)>=2%at least two remainder edges connect to the current end point of the path 
+			curPathNodes(end+1)=listEdge(rowB(1),4-colB(1));
+			curPathElems(end+1)=listEdge(rowB(1),1);
+			curPathDirects(end+1)=(colB(1)==1);
+			listEdge(rowB(1),:)=[];
+			continue
+		end
+		if length(rowA)>=2%at least 2 remainder edges to the start point
+			curPathNodes=horzcat(listEdge(rowA(1),4-colA(1)),curPathNodes);
+			curPathElems=[listEdge(rowA(1),1),curPathElems];
+			curPathDirects=[(colA(1)==2),curPathDirects];
+			listEdge(rowA(1),:)=[];
+			continue
+		end
+		%so far both the end nodes of the current path has no edge connected to them
+		PathNodes{end+1}=curPathNodes;
+		PathElems{end+1}=curPathElems;
+		PathDirects{end+1}=curPathDirects;
+		break
+	end
+end
+
+transSeg=4;%transverse segments of a strip
+longiSeg=4;%longitudinal segments for a quarter wave
+modeDisp=reshape(mode,4*nNd,[]);
+
+%determine the number of longitudinal segments
+
+%norm of the sub-deformation corresponding to each longi-function
+%dispNorm_lgFuncs=vecnorm(modeDisp); %function "vecnorm" is not supported by Matlab2016
+dispNorm_lgFuncs=zeros(1,size(modeDisp,2));
+for iFunc=1:size(modeDisp,2)
+	dispNorm_lgFuncs=norm(modeDisp(:,iFunc));
+end
+
+%if the deformation corresponding to a longi-function is very small (let's say smaller than 1/50 of the largest one), we don't need to care much about this small sub-deformation when plotting
+%so for all the longi-functions the corresponding sub-deformations are enough significant, the largest wave-number is what we need to take care of.
+%so this is it: Number of longitudinal segments = Largest halfwave number of the significant functions * longitudinal segments for a quarter wave *2
+km=2*longiSeg*max(m_a(dispNorm_lgFuncs>0.02*max(dispNorm_lgFuncs)))+1; %number of cross-section
+
+nM_a=length(m_a);% number of the longitudinal functions
+nStrip=nEdge;% strip number (same to the edges)
+
+nd1=elem(:,2);
+nd2=elem(:,3);
+X1=node(nd1,2);X2=node(nd2,2);
+Z1=node(nd1,3);Z2=node(nd2,3);
+bStrip=sqrt((X2-X1).^2+(Z2-Z1).^2);
+sinStrip=(Z2-Z1)./bStrip;
+cosStrip=(X2-X1)./bStrip;
+
+ptVect=(1:(transSeg-1))'/transSeg;
+SubNodeX=[1-ptVect,ptVect]*[X1';X2'];%i-row j-column£ºX-coordinate of the i-th subnode on the j-th strip
+SubNodeZ=[1-ptVect,ptVect]*[Z1';Z2'];%Z-coordinate
+
+
+%displacement of the nodes
+modeU=modeDisp(1:2:2*nNd,:);%the i-row j-column element: the U of the i-th node j-th function
+modeV=modeDisp(2:2:2*nNd,:);
+modeW=modeDisp(2*nNd+1:2:end,:);
+modeR=modeDisp(2*nNd+2:2:end,:);
+
+% displacement of the subnodes of the strips
+SubNodeUW=zeros((transSeg-1)*2,nM_a,nStrip); %the (2i-1)-th row,j-th column,k-th page element: the coefficient of the j-th function of the i-th equidistant subnode's U on the k-th strip
+
+%the i-th row,j-th column,k-th page element: V, Equidistant Subnode i, Function j, Strip k
+SubNodeV=zeros(transSeg-1,nM_a,nStrip); 
+
+%to calculate the displacement of the subnodes, strip by strip
+for i=1:nStrip
+	UWR2uwr=eye(6);
+	UWR2uwr(1:2,1:2)=[cosStrip(i),sinStrip(i);-sinStrip(i),cosStrip(i)];
+	UWR2uwr(4:5,4:5)=[cosStrip(i),sinStrip(i);-sinStrip(i),cosStrip(i)];
+	
+	uwrNd2uwSd=zeros(2*(transSeg-1),6);
+	uwrNd2uwSd(1:2:2*(transSeg-1),1)=1-ptVect;
+	uwrNd2uwSd(1:2:2*(transSeg-1),4)=ptVect;
+	uwrNd2uwSd(2:2:2*(transSeg-1),2)=  ptVect.^3.*2-ptVect.^2.*3.+1;
+	uwrNd2uwSd(2:2:2*(transSeg-1),3)=( ptVect.^3   -ptVect.^2.*2+ptVect).*bStrip(i);
+	uwrNd2uwSd(2:2:2*(transSeg-1),5)= -ptVect.^3.*2+ptVect.^2.*3;
+	uwrNd2uwSd(2:2:2*(transSeg-1),6)=( ptVect.^3   -ptVect.^2).*bStrip(i);
+	
+	uwSd2UWsd=zeros(2*(transSeg-1));
+	for iSd=1:transSeg-1
+		uwSd2UWsd(2*iSd-1:2*iSd,2*iSd-1:2*iSd)=[cosStrip(i),-sinStrip(i);sinStrip(i),cosStrip(i)];
+	end
+	SubNodeUW(:,:,i)=uwSd2UWsd*uwrNd2uwSd*UWR2uwr*[modeU(elem(i,2),:);modeW(elem(i,2),:);modeR(elem(i,2),:);modeU(elem(i,3),:);modeW(elem(i,3),:);modeR(elem(i,3),:)];
+	
+	SubNodeV(:,:,i)=[1-ptVect,ptVect]*[modeV(elem(i,2),:);modeV(elem(i,3),:)];
+end
+
+%to calculate the values of the longitudinal functions at positions the cross-sections
+%number of cross-section£ºkm
+%total segments along the length£º(km-1)
+y2L=linspace(0,1,km);%y/L
+
+if strcmp(BC,'S-S')
+	funcUWR=sin(pi.*m_a'*y2L);
+	funcV=cos(pi.*m_a'*y2L);
+elseif strcmp(BC,'C-C')
+	funcUWR=sin(pi.*m_a'*y2L).*sin(pi.*y2L);
+	funcV=cos(pi.*m_a'*y2L).*sin(pi.*y2L)+sin(pi.*m_a'*y2L).*cos(pi.*y2L)./m_a';
+elseif strcmp(BC,'S-C')||strcmp(BC,'C-S')
+	funcUWR=sin(pi.*(m_a'+1)*y2L)+(m_a'+1)./m_a'.*sin(pi.*m_a'*y2L);
+	funcV=(m_a'+1)./m_a'.*(cos(pi.*(m_a'+1)*y2L)+cos(pi.*m_a'*y2L));
+elseif strcmp(BC,'F-C')||strcmp(BC,'C-F')
+	funcUWR=1-cos(pi.*(m_a'-0.5)*y2L);
+	funcV=(m_a'-0.5)./m_a'.*sin(pi.*(m_a'-0.5)*y2L);
+elseif strcmp(BC,'G-C')||strcmp(BC,'C-G')
+	funcUWR=sin(pi.*(m_a'-0.5)*y2L).*sin(pi/2.*y2L);
+	funcV=(m_a'-.5)./m_a'.*cos(pi.*(m_a'-.5)*y2L).*sin(pi/2.*y2L)+sin(pi.*(m_a'-.5)*y2L).*cos(pi/2.*y2L)./m_a'./2;
+else
+	fprintf('\nError: Unrecognized boundary conditions.');
+end
+
+%Determine a scaling factor for the displaced shape
+scale=scalem*1/3*max(max(node(:,2:3)));
+
+watchon;
 %
 %
 %
 axes(axesnum);
-set(axesnum,'Visible','off')
-cla;
-hold(axesnum,'on')
-%
-%set initial axis limits
-xmin=min(node(:,2));
-xmax=max(node(:,2));
-ymin=0;
-ymax=L;
-zmin=min(node(:,3));
-zmax=max(node(:,3));
-if nargin<10|isempty(ifpatch)
-    ifpatch=0;
-end
-axis([xmin xmax ymin ymax zmin zmax]);
-%
-%
-%Determine a scaling factor for the displaced shape
-scale=scalem*1/3*max(max(node(:,2:3)));
-%
-%for k=1:10
-%   plot3(node(:,2),ones(length(node(:,1)),1)*(k-1)/9*L,-node(:,3),'r.')
-%   axis('off')
-%   title('MODE SHAPE')
-%   hold on
-%end
-%axis equal
-%
-%
+cla 
+axis off
+hold on
+colormap jet
+nPath=length(PathNodes);
 
-%Generate and plot
-maxm=max(m_a);
-Mw=0;%Maximum element length
-for i=1:length(elem(:,1))
-    hh1=abs(sqrt((node(elem(i,2),2)-node(elem(i,3),2))^2+(node(elem(i,2),3)-node(elem(i,3),3))^2));
-    if hh1>Mw
-        Mw=hh1;
-    end
+
+if Item3D==3
+    % plot the undeformed mesh
+	plot3([node(:,2)';node(:,2)'],[zeros(1,nNd);ones(1,nNd)*L],[node(:,3)';node(:,3)'],'Color',[.7 .7 .7],'LineStyle',':');
+	for iPath=1:nPath
+		plot3(node(PathNodes{iPath},2),zeros(length(PathNodes{iPath}),1) ,node(PathNodes{iPath},3),'Color',[.7 .7 .7],'LineStyle',':');
+		plot3(node(PathNodes{iPath},2),ones(length(PathNodes{iPath}),1)*L,node(PathNodes{iPath},3),'Color',[.7 .7 .7],'LineStyle',':');
+	end
 end
-km=max(ceil(L/Mw),3*maxm);
-for k=1:km
-%    figure(wait_message)
-   nnodes=length(node(:,1));
-   for i=1:length(elem(:,1))
-      %Get element geometry
-      nodei = elem(i,2);	nodej = elem(i,3);
-      xi = node(nodei,2);	   xj = node(nodej,2);
-      zi = node(nodei,3);	   zj = node(nodej,3);
-      %Determine the global element displacements
-      %dbar is the nodal displacements for the element in global
-      %coordinates. dbar=(u1 v1 u2 v2 w1 o1 w2 o2)';
-      links=5;
-      disp1m=zeros(2,links+1);
-      disp2m=zeros(2,links+1);
-      totalm=length(m_a);%Total number of longitudinal terms
-      for mn=1:totalm
-          dbar(1:2,1)=mode(4*nnodes*(mn-1)+2*nodei-1:4*nnodes*(mn-1)+2*nodei);%+dbar(1:2,1);
-          dbar(3:4,1)=mode(4*nnodes*(mn-1)+2*nodej-1:4*nnodes*(mn-1)+2*nodej);%+dbar(3:4,1);
-          dbar(5:6,1)=mode(4*nnodes*(mn-1)+2*nnodes+2*nodei-1:4*nnodes*(mn-1)+2*nnodes+2*nodei);%+dbar(5:6,1);
-          dbar(7:8,1)=mode(4*nnodes*(mn-1)+2*nnodes+2*nodej-1:4*nnodes*(mn-1)+2*nnodes+2*nodej);%+dbar(7:8,1);
-%           dbar(1:2,1)=mode(4*nnodes*(mn-1)+2*nodei-1:4*nnodes*(mn-1)+2*nodei);%+dbar(1:2,1);
-%           dbar(3:4,1)=mode(4*nnodes*(mn-1)+2*nodej-1:4*nnodes*(mn-1)+2*nodej);%+dbar(3:4,1);
-%           dbar(5:6,1)=mode(4*nnodes*(mn-1)+2*nnodes+2*nodei-1:4*nnodes*(mn-1)+2*nnodes+2*nodei);%+dbar(5:6,1);
-%           dbar(7:8,1)=mode(4*nnodes*(mn-1)+2*nnodes+2*nodej-1:4*nnodes*(mn-1)+2*nnodes+2*nodej);%+dbar(7:8,1);
-          %transform the dbar to local coordinates d
-          phi=atan2(-(zj-zi),(xj-xi));
-          d=gammait(phi,dbar);
-          %Determine the additional displacements in each element
-          links=5; %number of additional line segments to define the disp shape
-          b=sqrt((xj-xi)^2+(zj-zi)^2);
-          dl=shapef(links,d,b);
-          %transform the additional displacements into global coordinates
-          dlbar=gammait2(phi,dl);
-          %Create a vector of undisplaced coordinates "undisp"
-          undisp=zeros(2,links+1);
-          undisp(:,1)=[xi zi]';
-          undisp(:,links+1)=[xj zj]';
-          for j=2:links
-              undisp(:,j)=[xi+(xj-xi)*(j-1)/links zi+(zj-zi)*(j-1)/links]';
-          end
-          %Create a vector of displaced coordinates "disp"
-          if strcmp(BC,'S-S')
-              %stand for z "it" the scale change for 3 dimensional plot
-              z_it1=sin(m_a(mn)*pi*(k-1)/(km-1)); 
-              %stand for z "it" the scale change for 3 dimensional plot
-              z_it2=sin(m_a(mn)*pi*(k)/(km-1)); 
-          elseif strcmp(BC,'C-C')
-              %stand for z "it" the scale change for 3 dimensional plot
-              z_it1=sin(m_a(mn)*pi*(k-1)/(km-1))*sin(pi*(k-1)/(km-1)); 
-              %stand for z "it" the scale change for 3 dimensional plot
-              z_it2=sin(m_a(mn)*pi*(k)/(km-1))*sin(pi*(k)/(km-1)); 
-          elseif strcmp(BC,'S-C')|strcmp(BC,'C-S')
-              %stand for z "it" the scale change for 3 dimensional plot
-              z_it1=sin((m_a(mn)+1)*pi*(k-1)/(km-1))+(m_a(mn)+1)*sin(pi*(k-1)/(km-1))/m_a(mn);
-              z_it2=dlbar*(sin((m_a(mn)+1)*pi*(k)/(km-1))+(m_a(mn)+1)*sin(pi*(k)/(km-1))/m_a(mn))+dlbarm;
-          elseif strcmp(BC,'F-C')|strcmp(BC,'C-F')
-              z_it1=1-cos((m_a(mn)-1/2)*pi*(k-1)/(km-1));
-              z_it2=1-cos((m_a(mn)-1/2)*pi*(k)/(km-1));
-          elseif strcmp(BC,'G-C')|strcmp(BC,'C-G')
-              z_it1=sin((m_a(mn)-1/2)*pi*(k-1)/(km-1))*sin(pi*(k-1)/(km-1)/2);
-              z_it2=sin((m_a(mn)-1/2)*pi*(k)/(km-1))*sin(pi*(k)/(km-1)/2);
-          end
-          %
-          disp1=zeros(2,links+1);
-          if mn<totalm
-              disp1(:,1)=[scale*dbar(1)*z_it1 scale*dbar(5)*z_it1]';
-              disp1(:,links+1)=[scale*dbar(3)*z_it1 scale*dbar(7)*z_it1]';
-              disp1(1,2:links)=scale*dlbar(1,:)*z_it1;
-              disp1(2,2:links)=scale*dlbar(3,:)*z_it1;
-          elseif mn==totalm
-              disp1(:,1)=[xi+scale*dbar(1)*z_it1 zi+scale*dbar(5)*z_it1]';
-              disp1(:,links+1)=[xj+scale*dbar(3)*z_it1 zj+scale*dbar(7)*z_it1]';
-              disp1(1,2:links)=undisp(1,2:links)+scale*dlbar(1,:)*z_it1;
-              disp1(2,2:links)=undisp(2,2:links)+scale*dlbar(3,:)*z_it1;
-          end
-          disp1m=disp1m+disp1;
-          %
-          disp2=zeros(2,links+1);
-          if mn<totalm
-              disp2(:,1)=[scale*dbar(1)*z_it2 scale*dbar(5)*z_it2]';
-              disp2(:,links+1)=[scale*dbar(3)*z_it2 scale*dbar(7)*z_it2]';
-              disp2(1,2:links)=scale*dlbar(1,:)*z_it2;
-              disp2(2,2:links)=scale*dlbar(3,:)*z_it2;
-          elseif mn==totalm
-              disp2(:,1)=[xi+scale*dbar(1)*z_it2 zi+scale*dbar(5)*z_it2]';
-              disp2(:,links+1)=[xj+scale*dbar(3)*z_it2 zj+scale*dbar(7)*z_it2]';
-              disp2(1,2:links)=undisp(1,2:links)+scale*dlbar(1,:)*z_it2;
-              disp2(2,2:links)=undisp(2,2:links)+scale*dlbar(3,:)*z_it2;
-          end
-          disp2m=disp2m+disp2;
-      end%mn
-      %
-      %Wireframe Plot
-      %--------------------------------------------------------------
-      if ifpatch==0
-          %Plot the undeformed geometry
-          if undef==1
-             %plot3([xi xj],[(k-1)/(km-1)*L (k-1)/(km-1)*L],[zi zj],'k--','LineWidth',1,'erasemode','none')
-             plot3([xi xj],[(k-1)/(km-1)*L (k-1)/(km-1)*L],[zi zj],'k--','LineWidth',1)
-%              if k==1 & i==1
-%                  axis off, axis equal, axis([xmin xmax ymin ymax zmin zmax]), view(37.5,30)
-%              end
-             hold on
-             if k<km
-                %plot3([xi xi],[(k-1)/(km-1)*L (k)/(km-1)*L],[zi zi],'b','LineWidth',1,'erasemode','none')
-                %plot3([xj xj],[(k-1)/(km-1)*L (k)/(km-1)*L],[zj zj],'b','LineWidth',1,'erasemode','none')
-                plot3([xi xi],[(k-1)/(km-1)*L (k)/(km-1)*L],[zi zi],'b','LineWidth',1)
-                plot3([xj xj],[(k-1)/(km-1)*L (k)/(km-1)*L],[zj zj],'b','LineWidth',1)
-             end
-          end
-          %Now the deformed geometry
-          %plot3(disp1m(1,:),ones(1,links+1)*(k-1)/(km-1)*L,disp1m(2,:),'r','LineWidth',1,'erasemode','none')
-          plot3(disp1m(1,:),ones(1,links+1)*(k-1)/(km-1)*L,disp1m(2,:),'r','LineWidth',1)
-%              if k==1 & i==1
-%                  axis off, axis equal, axis([xmin xmax ymin ymax zmin zmax]), view(37.5,30)
-%              end
-          hold on
-          if k<km
-             for mm=[1,length(disp1m(1,:))]
-                %plot3([disp1m(1,mm),disp2m(1,mm)],[(k-1)/(km-1)*L (k)/(km-1)*L],[disp1m(2,mm),disp2m(2,mm)],'r','LineWidth',1,'erasemode','none')
-                plot3([disp1m(1,mm),disp2m(1,mm)],[(k-1)/(km-1)*L (k)/(km-1)*L],[disp1m(2,mm),disp2m(2,mm)],'r','LineWidth',1)
-             end
-          end
-          %plot3(xs,ys,zs,'r','LineWidth',1,'erasemode','none')
-      end  
-      
-      %
-      %Solid Plot (by patch)
-      %-------------------------------------------------------------------
-      if ifpatch==1
-      % undeformed geometry
-          if undef==1
-              if k<km
-                  for mm=1:1:length(disp1m(1,:))-1
-                      %patch('vertices',[xi (k-1)/(km-1)*L zi;xj (k-1)/(km-1)*L zj; xj (k)/(km-1)*L zj; xi (k)/(km-1)*L zi],'faces',[1 4 3 2],'FaceColor','none','EdgeColor','b','erasemode','none');
-                      patch('vertices',[xi (k-1)/(km-1)*L zi;xj (k-1)/(km-1)*L zj; xj (k)/(km-1)*L zj; xi (k)/(km-1)*L zi],'faces',[1 4 3 2],'FaceColor','none','EdgeColor','b');
-%                       if k==1 & i==1
-%                         axis off, axis equal, axis([xmin xmax ymin ymax zmin zmax]), view(37.5,30)
-%                       end
-                      hold on
-                  end
-              end
-          end
-      % deformed geometry
-      vert=[];
-      face=[];
-          if k<km
-              for mm=1:1:length(disp1m(1,:))-1
-                  %patch('vertices',[disp1m(1,mm) (k-1)/(km-1)*L disp1m(2,mm);disp1m(1,mm+1) (k-1)/(km-1)*L disp1m(2,mm+1); disp2m(1,mm+1) (k)/(km-1)*L disp2m(2,mm+1); disp2m(1,mm) (k)/(km-1)*L disp2m(2,mm)],'faces',[1 4 3 2],'FaceColor','w','EdgeColor','r','erasemode','none');
-                  patch('vertices',[disp1m(1,mm) (k-1)/(km-1)*L disp1m(2,mm);disp1m(1,mm+1) (k-1)/(km-1)*L disp1m(2,mm+1); disp2m(1,mm+1) (k)/(km-1)*L disp2m(2,mm+1); disp2m(1,mm) (k)/(km-1)*L disp2m(2,mm)],'faces',[1 4 3 2],'FaceColor','w','EdgeColor','r');
-                  %vertmm=[disp1m(1,mm) (k-1)/(km-1)*L disp1m(2,mm);disp1m(1,mm+1) (k-1)/(km-1)*L disp1m(2,mm+1); disp2m(1,mm+1) (k)/(km-1)*L disp2m(2,mm+1); disp2m(1,mm) (k)/(km-1)*L disp2m(2,mm)];
-                  %facemm=[1 4 3 2];
-%                   if k==1 & i==1
-%                     axis off, axis equal, axis([xmin xmax ymin ymax zmin zmax]), view(37.5,30)
-%                   end
-                  hold on
-              end
-              %vert=[vert;vertmm];
-              %facemm=[face;facemm];
-              %patch('vertices',vert,'faces',face,'FaceColor','w','EdgeColor','r','erasemode','none');           
-          end
-      %
-      end
-      
-      axis off
-         
-   end
-   
-%    info=['Length ',num2str(k),' done.'];
-   
-   waitbar(k/km,wait_message);
+
+%Usually, the color4data should be continuously distributed in the cross-section, but sometimes it might not
+%When it is continuously distributed, the surface can be constructed according to the "path", which span multiple strips.
+%When it is discontinuously across nodes, each surface should contain only one strip.
+if color4what_3D==6 %for the in-strip-plan shear strain (the shear strain value is discontinuous across nodes, so the plotting procedure is different to others that are continous in value over nodes)
+	if strcmp(BC,'S-S')
+		d_funcUWR=pi/L.*m_a'.*cos(pi.*m_a'*y2L);
+	elseif strcmp(BC,'C-C')
+		d_funcUWR=pi/L.*m_a'.*cos(pi.*m_a'*y2L).*sin(pi.*y2L)+pi/L.*sin(pi.*m_a'*y2L).*cos(pi.*y2L);
+	elseif strcmp(BC,'S-C')||strcmp(BC,'C-S')
+		d_funcUWR=pi/L.*(m_a'+1).*(cos(pi.*(m_a'+1)*y2L)+cos(pi.*m_a'*y2L));
+	elseif strcmp(BC,'F-C')||strcmp(BC,'C-F')
+		d_funcUWR=pi/L.*(m_a'-0.5).*sin(pi.*(m_a'-0.5)*y2L);
+	elseif strcmp(BC,'G-C')||strcmp(BC,'C-G')
+		d_funcUWR=pi/L.*(m_a'-.5).*cos(pi.*(m_a'-.5)*y2L).*sin(pi/2.*y2L)+pi*.5/L.*sin(pi.*(m_a'-.5)*y2L).*cos(pi/2.*y2L);
+	else
+		fprintf('\nError: Unrecognized boundary conditions.');
+	end
+	%calculate the shear strains strip by strip
+	shearStrainStripMesh=zeros(km,transSeg+1,nStrip);
+	sVec=linspace(0,1,transSeg+1)';
+	V1=modeV(nd1,:);%the V value of the 1st node of each strip
+	V2=modeV(nd2,:);% that for the 2nd node of each strip
+	U1=modeU(nd1,:);
+	U2=modeU(nd2,:);
+	W1=modeW(nd1,:);
+	W2=modeW(nd2,:);
+	u1=[diag(cosStrip),diag(sinStrip)]*[U1;W1];
+	u2=[diag(cosStrip),diag(sinStrip)]*[U2;W2];
+	dV2ds_All=(V2-V1)./bStrip;%the rotations of the cross-sections of the strips in their strip-plane
+	xStripMesh=zeros(km,transSeg+1,nStrip);
+	zStripMesh=zeros(km,transSeg+1,nStrip);
+	yStripMesh=zeros(km,transSeg+1,nStrip);
+	VStripMesh=zeros(km,transSeg+1,nStrip);
+	UStripMesh=zeros(km,transSeg+1,nStrip);
+	WStripMesh=zeros(km,transSeg+1,nStrip);
+	for iStrip=1:nStrip
+		dV2ds_curStrip=repmat(dV2ds_All(iStrip,:),(transSeg+1),1);
+		uMesh_curStrip=[1-sVec,sVec]*[u1(iStrip,:);u2(iStrip,:)];
+		shearStrainStripMesh(:,:,iStrip)=funcV'*dV2ds_curStrip'+d_funcUWR'*uMesh_curStrip';
+		xStripMesh(:,:,iStrip)=repmat([X1(iStrip),X2(iStrip)]*[1-sVec';sVec'],km,1);
+		zStripMesh(:,:,iStrip)=repmat([Z1(iStrip),Z2(iStrip)]*[1-sVec';sVec'],km,1);
+		yStripMesh(:,:,iStrip)=repmat(linspace(0,L,km)',1,transSeg+1);
+		VStripMesh(:,:,iStrip)=funcV'*[V1(iStrip,:);V2(iStrip,:)]'*[1-sVec,sVec]';
+		UStripMesh(:,:,iStrip)=funcUWR'*[modeU(nd1(iStrip),:)',SubNodeUW(1:2:end,:,iStrip)',modeU(nd2(iStrip),:)'];
+		WStripMesh(:,:,iStrip)=funcUWR'*[modeW(nd1(iStrip),:)',SubNodeUW(2:2:end,:,iStrip)',modeW(nd2(iStrip),:)'];
+	end
+
+	
+	if ifSurface==1
+		if Item3D==1 || Item3D==3
+            %in this case, the deformed surface(s) will be plotted. Signature meshes will be plotted in the deformed surface(s), Signature meshes are kind of sparse.
+			isMajorSec=false(km,1);
+			isMajorSec(1:longiSeg:end)=true;% one cross-section each quarter-wave for the sparse meshes 
+			xStrMesh_Skeleton=xStripMesh;
+			xStrMesh_Skeleton(~isMajorSec,2:transSeg,:)=nan;
+			for iStrip=1:nStrip
+				mesh(UStripMesh(:,:,iStrip).*scale+xStrMesh_Skeleton(:,:,iStrip),VStripMesh(:,:,iStrip).*scale+yStripMesh(:,:,iStrip),WStripMesh(:,:,iStrip).*scale+zStripMesh(:,:,iStrip),zeros(km,transSeg+1),'EdgeColor',[.6 .6 .6],'LineStyle',':','FaceColor','none');
+				surf(UStripMesh(:,:,iStrip).*scale+xStripMesh(:,:,iStrip),VStripMesh(:,:,iStrip).*scale+yStripMesh(:,:,iStrip),WStripMesh(:,:,iStrip).*scale+zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
+			end
+		else %Undeformed shape only
+			for iStrip=1:nStrip
+				surf(xStripMesh(:,:,iStrip),yStripMesh(:,:,iStrip),zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
+			end
+		end
+    else
+        %The figure is in mesh style
+		%going to generate the mesh grid
+		xStrMesh_Skeleton=xStripMesh;
+		for iStrip=1:nStrip
+			if Item3D==1 || Item3D==3
+				mesh(UStripMesh(:,:,iStrip).*scale+xStrMesh_Skeleton(:,:,iStrip),VStripMesh(:,:,iStrip).*scale+yStripMesh(:,:,iStrip),WStripMesh(:,:,iStrip).*scale+zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+			else
+				mesh(xStrMesh_Skeleton(:,:,iStrip),yStripMesh(:,:,iStrip),zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+			end
+		end
+	end
+	
+	settings3dPloting(ifColorBar);
+	return;
 end
-if ishandle(wait_message)
-    delete(wait_message);
+
+%Now, the Data are continuously distributed across the cross-section, so the plotting will be based on paths, not strips.
+
+%undeformed mesh
+pathNdX=cell(nPath,1);
+pathNdZ=cell(nPath,1);
+pathVexClas=cell(nPath,1);
+Xmesh=cell(nPath,1);
+Ymesh=cell(nPath,1);
+Zmesh=cell(nPath,1);
+for iPath=1:nPath
+	pathNdX{iPath}=node(PathNodes{iPath},2);
+	pathNdZ{iPath}=node(PathNodes{iPath},3);
+	%Path vertex type:  true-node  false-sub-node
+	pathVexClas{iPath}=false(1,transSeg*length(PathElems{iPath})+1);
+	pathVexClas{iPath}(1:transSeg:end)=true;
+	
+	pathSdX=SubNodeX(:,PathElems{iPath});
+	pathSdX(:,~PathDirects{iPath})=flipud(pathSdX(:,~PathDirects{iPath}));
+	pathSdX=reshape(pathSdX,[],1);
+	
+	pathSdZ=SubNodeZ(:,PathElems{iPath});
+	pathSdZ(:,~PathDirects{iPath})=flipud(pathSdZ(:,~PathDirects{iPath}));
+	pathSdZ=reshape(pathSdZ,[],1);
+	
+	Xmesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+	Ymesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+	[Xmesh{iPath}(:,pathVexClas{iPath}),Ymesh{iPath}(:,pathVexClas{iPath})]=meshgrid(pathNdX{iPath},linspace(0,L,km));
+	[Xmesh{iPath}(:,~pathVexClas{iPath}),Ymesh{iPath}(:,~pathVexClas{iPath})]=meshgrid(pathSdX,linspace(0,L,km));
+	
+	Zmesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+	Zmesh{iPath}(:,pathVexClas{iPath})=repmat(pathNdZ{iPath}',km,1);
+	Zmesh{iPath}(:,~pathVexClas{iPath})=repmat(pathSdZ',km,1);
 end
-axis equal
+
+
+%deformations at the mesh grids
+dispUmesh=cell(nPath,1);
+dispWmesh=cell(nPath,1);
+dispVmesh=cell(nPath,1);
+for iPath=1:nPath
+	pathNdU=modeU(PathNodes{iPath},:);
+	pathNdW=modeW(PathNodes{iPath},:);
+	pathNdV=modeV(PathNodes{iPath},:);
+	
+	pathSdU=SubNodeUW(1:2:end,:,PathElems{iPath});
+	pathSdU(:,:,~PathDirects{iPath})=flipud(pathSdU(:,:,~PathDirects{iPath}));
+	pathSdU=reshape(permute(pathSdU,[1,3,2]),[],nM_a);
+	
+	pathSdW=SubNodeUW(2:2:end,:,PathElems{iPath});
+	pathSdW(:,:,~PathDirects{iPath})=flipud(pathSdW(:,:,~PathDirects{iPath}));
+	pathSdW=reshape(permute(pathSdW,[1,3,2]),[],nM_a);
+	
+	pathSdV=SubNodeV(:,:,PathElems{iPath});
+	pathSdV(:,:,~PathDirects{iPath})=flipud(pathSdV(:,:,~PathDirects{iPath}));
+	pathSdV=reshape(permute(pathSdV,[1,3,2]),[],nM_a);
+	
+	%store and gather the data
+	dispUmesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+	dispUmesh{iPath}(:,pathVexClas{iPath})=funcUWR'*pathNdU';
+	dispUmesh{iPath}(:,~pathVexClas{iPath})=funcUWR(:,:)'*pathSdU'; % for the equidistant nodes on the real cross-sections
+	
+	dispWmesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+	dispWmesh{iPath}(:,pathVexClas{iPath})=funcUWR'*pathNdW';
+	dispWmesh{iPath}(:,~pathVexClas{iPath})=funcUWR(:,:)'*pathSdW';
+	
+	dispVmesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+	dispVmesh{iPath}(:,pathVexClas{iPath})=funcV'*pathNdV';
+	dispVmesh{iPath}(:,~pathVexClas{iPath})=funcV(:,:)'*pathSdV';
+end
+
+
+isMajorSec=false(km,1);
+isMajorSec(1:longiSeg:end)=true;%the sparse mesh will be four sections for one wave
+XMeshSkeleton=Xmesh;
+for iPath=1:nPath
+	XMeshSkeleton{iPath}(~isMajorSec,~pathVexClas{iPath})=nan;
+end
+if (Item3D==1 || Item3D==3) && ifSurface ==1 % draw the signature mesh for the deformed surface.
+	for iPath=1:nPath
+		mesh(dispUmesh{iPath}.*scale+XMeshSkeleton{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(XMeshSkeleton{iPath})),'EdgeColor',[0.6 0.6 0.6],'LineStyle',':','FaceColor','none');
+	end
+end
+
+
+if color4what_3D==7 %no color data
+	for iPath=1:nPath
+		if Item3D==1 || Item3D==3
+			if ifSurface==1
+				surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','none','FaceColor','w','FaceAlpha',1.0,'FaceLighting','flat');
+			else
+				surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','k','FaceColor','non','FaceAlpha',1.0,'FaceLighting','flat');
+			end
+		else
+			if ifSurface==1
+				surf(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','none','FaceColor','w','FaceAlpha',1.0,'FaceLighting','flat');
+				surf(XMeshSkeleton{iPath},Ymesh{iPath},Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor',[0.6 0.6 0.6],'LineStyle',':','FaceColor','w','FaceAlpha',1.0,'FaceLighting','flat');
+			else
+				surf(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','k','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+			end
+		end
+	end
+	
+	
+	
+% 	
+% 	if Style3D==1
+% 		if Item3D==1 || Item3D==3
+% 			for iPath=1:nPath
+% 				surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},'EdgeColor','k','LineStyle','none','FaceColor','white','FaceAlpha',1.0,'FaceLighting','flat');
+% 			end
+% 		else
+% 			for iPath=1:nPath
+% 				surf(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},'EdgeColor','k','LineStyle','none','FaceColor','white','FaceAlpha',1.0,'FaceLighting','flat');
+% 			end
+% 		end
+% 	else
+% 		if Item3D==1 || Item3D==3
+% 			for iPath=1:nPath
+% 				mesh(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(Xmesh{iPath})),'LineStyle','-','FaceColor','none');
+% 			end
+% 		else
+% 			for iPath=1:nPath
+% 				mesh(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},'EdgeColor','g','LineStyle','-','FaceColor','none');
+% 			end
+% 		end
+% 	end
+	settings3dPloting(false);
+	return;
+end
+
+%% So far£¬ color4what_3D can only be 1 2 3 4 5 
+if color4what_3D==1
+	colorItem=cell(nPath,1);
+	for iPath=1:nPath
+		colorItem{iPath}=sqrt(dispUmesh{iPath}.^2+dispVmesh{iPath}.^2+dispWmesh{iPath}.^2);
+	end
+elseif color4what_3D==2
+	colorItem=dispUmesh;
+elseif color4what_3D==3
+	colorItem=dispVmesh;
+elseif color4what_3D==4
+	colorItem=dispWmesh;
+else %Item3D==5 (cross-section normal strain)
+	if strcmp(BC,'S-S')
+		d_funcV=-pi/L.*m_a'.*sin(pi.*m_a'*y2L);
+	elseif strcmp(BC,'C-C')
+		d_funcV=2*pi/L.*cos(pi.*m_a'*y2L).*cos(pi.*y2L)-pi/L.*(m_a'+1./m_a').*sin(pi.*m_a'*y2L).*sin(pi.*y2L);
+	elseif strcmp(BC,'S-C')||strcmp(BC,'C-S')
+		d_funcV=-pi/L.*(m_a'+1)./m_a'.*(sin(pi.*(m_a'+1)*y2L).*(m_a'+1)+sin(pi.*m_a'*y2L).*m_a');
+	elseif strcmp(BC,'F-C')||strcmp(BC,'C-F')
+		d_funcV=pi/L.*(m_a'-0.5)^2./m_a'.*cos(pi.*(m_a'-0.5)*y2L);
+	elseif strcmp(BC,'G-C')||strcmp(BC,'C-G')
+		d_funcV=pi/L.*(m_a'-.5)./m_a'.*cos(pi.*(m_a'-.5)*y2L).*cos(pi/2.*y2L) - pi/L.*((m_a'-.5).^2+.25)./m_a'.*sin(pi.*(m_a'-.5)*y2L).*sin(pi/2.*y2L);
+	else
+		fprintf('\nError: Unrecognized boundary conditions.');
+	end
+	normalStrainYMesh=cell(nPath,1);
+	for iPath=1:nPath
+		normalStrainYMesh{iPath}=nan(km,transSeg*length(PathElems{iPath})+1);
+		normalStrainYMesh{iPath}(:,pathVexClas{iPath})=d_funcV'*modeV(PathNodes{iPath},:)';
+		
+		pathSdV=SubNodeV(:,:,PathElems{iPath});
+		pathSdV(:,:,~PathDirects{iPath})=flipud(pathSdV(:,:,~PathDirects{iPath}));
+		pathSdV=reshape(permute(pathSdV,[1,3,2]),[],nM_a);
+		normalStrainYMesh{iPath}(:,~pathVexClas{iPath})=d_funcV'*pathSdV';
+	end
+	colorItem=normalStrainYMesh;
+end
+
+
+% For 'Deformed only' or 'Deformd shape + undeformed mesh', the deformed surfs are rendered according to colorItem
+if Item3D==1 || Item3D==3
+	for iPath=1:nPath
+		if ifSurface==1
+			surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},colorItem{iPath},'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
+		else
+			surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},colorItem{iPath},'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+		end
+	end
+	
+
+else %For 'Undeformed only',  the undeformed surfs are rendered
+	for iPath=1:nPath
+		if ifSurface==1
+			surf(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},colorItem{iPath},'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
+		else
+			mesh(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},colorItem{iPath},'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+		end
+	end
+end
+
+settings3dPloting(ifColorBar);
+end
+
+function settings3dPloting(ifColorBar)
+if ifColorBar
+	cb=colorbar;
+	cbPosition=cb.Position;
+	cbPosition(2)=cbPosition(2)+cbPosition(4)*0.15;
+	cbPosition(4)=cbPosition(4)*0.7;
+	cb.Position=cbPosition;
+else
+	colorbar('off');
+end
+
+light('position',[1,1,2],'style','infinite');
+light('position',[-2,-1,0],'style','infinite');
+lighting phong
+material metal
+
 view(37.5,30)
-%hold off
-%
-hold(axesnum,'off')
-set(axesnum,'visible','off')
-%watchoff
+hZoom=zoom;
+setAxes3DPanAndZoomStyle(hZoom,gca,'camera');
+hold off
+axis equal
+watchoff
+end

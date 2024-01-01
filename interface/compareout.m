@@ -164,7 +164,17 @@ end
 mode=shapes{lengthindex}(:,modeindex);
 if threed==1
     dispshap(undef,node,elem,mode,axes2dshape,scale,springs,m_a,BC,SurfPos);
-    dispshp2(undef,lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_a,BC,ifpatch);
+
+	if undef
+		Item3D=3;%Deformed shape & undeformed mesh
+	else
+		Item3D=1;%Deformed shape only
+	end
+	Data3D=1;%Vector sum of Displacement
+	ifColorBar=1;%draw color bar
+    dispshp2(lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_a,BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+
+%    dispshp2(undef,lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_a,BC,ifpatch);
 else
     dispshap(undef,node,elem,mode,axes2dshapelarge,scale,springs,m_a,BC,SurfPos);
 end
