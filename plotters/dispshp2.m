@@ -178,7 +178,7 @@ axes(axesnum);
 cla 
 axis off
 hold on
-colormap jet
+colormap(axesnum,jet(256));
 nPath=length(PathNodes);
 
 

@@ -54,7 +54,7 @@ if clasopt
             
             axis([xmin xmax ymin ymax])
             axis tight
-            colormap lines(4)%jet
+            colormap(axesnum,lines(4));
         end
 %     end
 end

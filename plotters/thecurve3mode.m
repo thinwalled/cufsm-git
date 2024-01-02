@@ -35,7 +35,7 @@ if clasopt
         hlegend=legend(hc,'global','distortional','local','other');
         set(hlegend,'Location','best');
 %         axis tight
-        colormap lines(4)%jet
+        colormap(axesnum,lines(4));
         axis([xmin xmax ymin ymax])
     end
 end
