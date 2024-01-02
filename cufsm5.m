@@ -151,6 +151,9 @@ function []=cufsm5()
 %                    -changed cutwp to use global variables instead of load
 %                    and save, this should now work in compiled versions
 %                    bringing back this functionality to those users
+%version 5.06 as of 2 Jan 2024
+%                   -Moved management to github for the code
+%                   -merged in Sheng Jin's 3D plotting code
 %-------------------------------------------------------------------------------------------------
 %
 %
@@ -208,7 +211,7 @@ end
 %-----------------------------------------------------------------------------------
 %Title and menus
 %-----------------------------------------------------------------------------------
-version=['5.05'];
+version=['5.06'];
 name=['CUFSM v',version,' -- Constrained and Unconstrained Finite Strip Method (CUFSM) Buckling Analysis of Thin-Walled Members'];
 fig=figure('Name',name,...
    	'NumberTitle','off');
