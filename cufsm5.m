@@ -201,12 +201,12 @@ function [] = cufsm5()
     % % Set units to pixels:
     % set(0, 'units', 'pixels');
     % % Get size of current screen:
-    % pixelss = get(0, 'screensize');
+    % pixels = get(0, 'screensize');
     % % Set max width and height:
     % widthmax = 1280;
     % heightmax = 800;
     % % Set CUFSM window size:
-    % cufsmwindowsize = [1 1 min([pixelss(3); widthmax]) min([pixelss(4); heightmax])];
+    % cufsmwindowsize = [1 1 min([pixels(3); widthmax]) min([pixels(4); heightmax])];
     % set(fig, 'position', cufsmwindowsize);
 
     % Set default font size:
