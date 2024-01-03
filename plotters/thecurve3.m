@@ -81,6 +81,7 @@ for i=1:length(filedisplay)
 
     if logopt==1
         hndlmark(i)=semilogx(curve_sign(:,1),curve_sign(:,2),mark,'MarkerSize',5);hold on
+% 		hndlmark(i).Annotation.LegendInformation.IconDisplayStyle='off';%For reference, this line can exclude the object from the legend
         hndl=semilogx(curve_sign(:,1),curve_sign(:,2),'k',curve_sign(:,1),curve_sign(:,2),mark,'MarkerSize',5);hold on
         if length(modedisplay)>1
             hndlmark(i)=semilogx(curve_sign(:,1),curve_sign(:,2),mark);hold on
@@ -173,6 +174,7 @@ if clasopt
 %        h=legend(hndlmark,filenamecell{filedisplay});
 %     end
     %   	legend(hc,'global','distortional','local','other')
+	legend(hc,'global','distortional','local','other','Location','best','AutoUpdate','Off')
 else
     h=legend(hndlmark,filenamecell{filedisplay},'Location','best','AutoUpdate','Off');
     %don't use latex in the legend so underscores are written ok
