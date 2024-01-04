@@ -76,9 +76,11 @@ hold off
 %Add a legend
 if clasopt
     %   	legend(hc,'global','distortional','local','other')
+	legend(hc,'global','distortional','local','other','Location','best','AutoUpdate','Off')
 else
-    h=legend(hndlmark,legendname{[1:filenumbers-1]});
-    set(h,'Location','best');
+%     h=legend(hndlmark,legendname{[1:filenumbers-1]});
+%     set(h,'Location','best');
+	h=legend(hndlmark,filenamecell{filedisplay},'Location','best','AutoUpdate','Off');
     %don't use latex in the legend so underscores are written ok
     releasestring=version('-release');
     release=str2num(releasestring);
