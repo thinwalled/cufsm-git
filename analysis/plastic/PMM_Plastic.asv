@@ -80,11 +80,7 @@ for i=1:length(e)
     end
     
     M1(i,k)=M1(i,k)-fib(j,5)*fib(j,3);
-    %BWS 2024 01 05, debugging difference between stressgen and plastic
-    %surface builder, believe it is difference in M2 definition, so
-    %changing sign from original code to opposite sign on M2
-        %M2(i,k)=M2(i,k)+fib(j,5)*fib(j,2);
-    M2(i,k)=M2(i,k)-fib(j,5)*fib(j,2);    
+    M2(i,k)=M2(i,k)+fib(j,5)*fib(j,2);
     P(i,k)=P(i,k)+fib(j,5);
 
   end 
