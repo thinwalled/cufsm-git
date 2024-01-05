@@ -18,6 +18,7 @@ marker=['.x+*sdv^<'];
 %fileindex=1;
 %modeindex=1;
 %If the classification option is on, then start with modal classification
+clasLgd=[];
 if clasopt
     clas=clascell{fileindex};
 %     solutiontype=solutiontypecell{fileindex};
@@ -36,7 +37,7 @@ if clasopt
             hold on
             if length(curve_length)>=2
                 hc=area(curve_length,clasplot);
-                legend(hc,'global','distortional','local','other','Location','best')
+                clasLgd=legend(hc,'global','distortional','local','other','Location','best','AutoUpdate','Off');
             else
                 if logopt==1
                     semilogx(curve_length,clasplot(1),'c.','MarkerSize',20);...
@@ -49,7 +50,7 @@ if clasopt
                     plot(curve_length,clasplot(3),'m.','MarkerSize',20);
                     plot(curve_length,clasplot(4),'b.','MarkerSize',20);
                 end
-                legend('global','distortional','local','other','Location','best')
+                clasLgd=legend('global','distortional','local','other','Location','best','AutoUpdate','Off');
             end
             
             axis([xmin xmax ymin ymax])
@@ -81,6 +82,7 @@ for i=1:length(filedisplay)
 
     if logopt==1
         hndlmark(i)=semilogx(curve_sign(:,1),curve_sign(:,2),mark,'MarkerSize',5);hold on
+% 		hndlmark(i).Annotation.LegendInformation.IconDisplayStyle='off';%For reference, this line can exclude the object from the legend
         hndl=semilogx(curve_sign(:,1),curve_sign(:,2),'k',curve_sign(:,1),curve_sign(:,2),mark,'MarkerSize',5);hold on
         if length(modedisplay)>1
             hndlmark(i)=semilogx(curve_sign(:,1),curve_sign(:,2),mark);hold on
@@ -166,6 +168,8 @@ end %loop on different files
 
 hold off
 
+% Another way is maintaining a list of all the object handles (and a cell of the labels) to be shown in the legend, and build the legend at last. 
+
 %Add a legend
 if clasopt
 %     solutiontype=solutiontypecell{fileindex};
@@ -173,6 +177,9 @@ if clasopt
 %        h=legend(hndlmark,filenamecell{filedisplay});
 %     end
     %   	legend(hc,'global','distortional','local','other')
+	if isempty(clasLgd)
+		legend(hndlmark,filenamecell{filedisplay},'Location','best','AutoUpdate','Off');
+	end
 else
     h=legend(hndlmark,filenamecell{filedisplay},'Location','best','AutoUpdate','Off');
     %don't use latex in the legend so underscores are written ok

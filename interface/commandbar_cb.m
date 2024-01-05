@@ -568,6 +568,8 @@ if ~isempty(curve)&~isempty(shapes)%&curve{1}(1,1)~=0&shapes{1}(1,1)~=0
             %                  case 'Robust Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,1,springs,constraints);,watchoff;,end,
             %watchon;,[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);,watchoff;
             [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+			clascell={};
+			clas=[];
             compareout(1);
     end
 elseif ~isempty(prop)&~isempty(node)&~isempty(elem)&~isempty(lengths)&~isempty(BC)&~isempty(m_all)
@@ -576,6 +578,8 @@ elseif ~isempty(prop)&~isempty(node)&~isempty(elem)&~isempty(lengths)&~isempty(B
     %				   case 'Robust Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,1,springs,constraints);,watchoff;,end,
     %watchon;,[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);,watchoff;
     [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+	clascell={};
+	clas=[];
     compareout(1);
 else
     if screen==2
