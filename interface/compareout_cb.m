@@ -734,6 +734,7 @@ elseif cFSM_analysis==1
     else        
         %perform the classification
         wait_message=waitbar(0,'Performing Modal Classification');
+		clas={};%clear the previous classification solution
         %generate unit length natural base vectors
         
         %loop over the length
