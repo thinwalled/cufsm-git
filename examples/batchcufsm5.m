@@ -3,17 +3,25 @@
 %CUFSM without the GUI. This example goes through most of the basic CUFSM
 %fucntions but shows how they can be programmed in matlab.
 %v3 Ben Schafer; v4 Zhanjie Li, March 2012; v5 Ben Schafer
+%updates on 6 Jan 2024 to work with cufsm on github at that date
 
 %clear the workspace (optional)
 clear all
 close all
 clc
 
+%%
+%-----------------------------------------------------------------
+%You need to provide the path to your installation of CUFSM below!
+%-----------------------------------------------------------------
+
 %location of cufsm m-files (subroutines)
-%(they are located where you unzipped them..)
+
 %note, there is difference of the format between mac/linux and windows
+
 %For mac or linux
-location=['/Users/bschafer/Dropbox (CEDJHU)/Ben/CUFSM/cufsm_working/cufsm5/source502']; %change this line to your own path
+%modify this line
+location=['/Users/bschafer/Dropbox (CEDJHU)/Ben/CUFSM/cufsm-git/cufsm-git/']; %change this line to your own path
 addpath([location]);
 addpath([location,'/abaqusmaker']);
 addpath([location,'/analysis']);
@@ -24,7 +32,7 @@ addpath([location,'/holehelper']);
 addpath([location,'/interface']);
 addpath([location,'/plotters']);
 
-% %for windows, something like this         
+% %for windows, something like this %and uncomment this section         
 % location=['C:\zhanjieli\Documents\cufsm5\source502']; %change this line to your own path
 % addpath([location,'\abaqusmaker']);
 % addpath([location,'\analysis']);
@@ -174,7 +182,7 @@ GBTcon.other=zeros(1,nom);
 %---------------RUN THE ANALYSIS----------------------------------
 %-----------------------------------------------------------------
 %
-[curve,shapes]=strip(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
 %
 
 %-----------------------------------------------------------------
