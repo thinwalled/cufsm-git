@@ -108,6 +108,8 @@ else
 	set(popup_3dData,'Enable','on');
 	set(popup_3dStyle,'Enable','on');
 end
+%plot the shape
+compareout_cb(1);
 %------------------------------------------------------------------------------------------
 
 % case 4
@@ -856,9 +858,9 @@ label_title=uicontrol(subfig,...
 	'String',label);
 %------------------------------------------------------------------------------------------
 
-	case 41
+    case 41 %3D item toggle
 		compareout_cb(1)
-	case 42
+    case 42 %3D data toggle
 		compareout_cb(1)
 end
 
