@@ -12,7 +12,7 @@ function []=dispshp2(L,node,elem,mode,axesnum,scalem,m_a,BC,ifpatch,Item3D,color
 	%1: Vector sum of Displacement, 2: X-Component of displacement, 3: Y-Component of displacement, 4: Z-Component of displacement
 	%5: Y-Component of Normal Strain, 6: In-strip-plane of Shear Strain
 	%7: No Color
-%ifSurface: surface(1) or mesh(0)
+%ifSurface: surface(1) or mesh(2)
 %ifColorBar: display a vertical colorbar or not
 
 %To determine the ergodic path(s) of the cross-section, "Euler path"
