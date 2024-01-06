@@ -2,6 +2,7 @@ function []=compareout_cb(num)
 %BWS
 %August 28,2000
 %Z. Li, July 2010 (last modified to accomodate general boudanry condition solution)
+%Sheng Jin Jan 2024 (supporting for the new 3d plotter)
 %GUI control callbacks for the post-processor that compares several different runs
 %
 %general
@@ -18,6 +19,8 @@ global ed_m ed_neigs solutiontype togglesignature togglegensolution popup_BC tog
 global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_local ed_other NatBasis ModalBasis toggleCouple popup_load axesoutofplane axesinplane axes3d lengthindex modeindex spaceindex longitermindex b_v_view modename spacename check_3D cutface_edit len_cur mode_cur space_cur longterm_cur modes SurfPos scale twod threed undef scale_tex
 %output from compareout
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
+%by Sheng Jin
+global toggle_3D popup_3dItem popup_3dData popup_3dStyle
 %
 switch num
 
@@ -59,7 +62,7 @@ elseif val == 4
 	set(filename_title2,'String','Applied stress distribution for ');
 end
 
-if clasopt==1 %add classification results as well
+if clasopt==1 && ~isempty(clas)%add classification results as well
     GBTcon.norm =get(popup_classify,'Value');
     if GBTcon.norm ==1
         classify_norm=['vector norm '];
@@ -80,17 +83,11 @@ end
 if ifcheck3d==1
     scale=str2num(get(scale_tex,'String'));
     mode=shapes{lengthindex}(:,modeindex);
-    undefv=get(undef,'Value');
-    ifpatch=get(checkpatch,'Value');
-	
-	if undefv
-		Item3D=3;%Deformed shape & undeformed mesh
-	else
-		Item3D=1;%Deformed shape only
-	end
-	Data3D=1;%Vector sum of Displacement
+	Item3D=get(popup_3dItem,'Value');
+	Data3D=get(popup_3dData,'Value');
+	ifSurface=get(popup_3dStyle,'Value');
 	ifColorBar=1;%draw color bar
-    dispshp2(lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+    dispshp2(lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifSurface,ifColorBar);
 %    dispshp2(undefv,lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,ifpatch);
 %     dispshap3dwaxial(undefv,lengths(lengthindex),node,elem,mode,axesshape,scale);	
 else
@@ -101,12 +98,15 @@ end
 case 3
 %------------------------------------------------------------------------------------------
 %3D toggle
-ifcheck3d=get(threed,'Value');
+ifcheck3d=get(toggle_3D,'Value');
 if ifcheck3d==0
-    set(checkpatch,'Value',0);
-    set(checkpatch,'Enable','off');    
+	set(popup_3dItem,'Enable','off');
+	set(popup_3dData,'Enable','off');
+	set(popup_3dStyle,'Enable','off');
 else 
-    set(checkpatch,'Enable','on');
+	set(popup_3dItem,'Enable','on');
+	set(popup_3dData,'Enable','on');
+	set(popup_3dStyle,'Enable','on');
 end
 %------------------------------------------------------------------------------------------
 
@@ -498,16 +498,28 @@ case 19
 %------------------------------------------------------------------------------------------
 %Plot the selected mode in a new window
 subfig=figure;
-name=['CUFSM v4.0 -- Captured mode shape 2D'];
+name=['CUFSM v',version,' -- Captured mode shape 2D'];
 set(subfig,'Name',name,'NumberTitle','off');
 %set(subfig,'MenuBar','none');
 set(subfig,'position',[100 100 500 300])%
-axescapture=axes('Units','normalized','Position',[0.01 0.09 0.98 0.91],'visible','off');
+set(subfig,'units','normalized')
+axescapture=axes('Units','normalized','Position',[0.01 0.09 0.97 0.85],'visible','off');
 scale=str2num(get(scale_tex,'String'));
 undefv=get(undef,'Value');
 SurfPos=str2num(get(cutsurf_tex,'String'));
 mode=shapes{lengthindex}(:,modeindex);
+
+val = get(popup_plot,'Value');
+if val==1 
 dispshap(undefv,node,elem,mode,axescapture,scale,springs,m_all{lengthindex},BC,SurfPos);
+elseif val==2
+    vdisppic(node,elem,axescapture,scale,shapes{lengthindex}(:,modeindex),m_all{lengthindex},BC,SurfPos);
+elseif val==3
+    strainEpic(prop,node,elem,axescapture,scale,shapes{lengthindex}(:,modeindex),lengths(lengthindex),BC,m_all{lengthindex});
+elseif val==4
+    strespic(node,elem,axescapture,scale);
+end
+
 if solutiontype==1
     label=[filename,' half-wavelength=',num2str(lengths(lengthindex)),' load factor=',num2str(curve{lengthindex}(modeindex,2)),' mode=',num2str(modes(modeindex))];
 elseif solutiontype==2
@@ -518,23 +530,20 @@ label_title=uicontrol(subfig,...
     'Position',[0.01 0.02 .98 .05],...
     'String',label);
 
-ifcheck3d=get(threed,'Value');
+ifcheck3d=get(toggle_3D,'Value');
 if ifcheck3d
     subfig3d=figure;
-    name=['CUFSM v4.0 -- Captured mode shape 3D'];
+	name=['CUFSM v',version,' -- Captured mode shape 3D'];
     set(subfig3d,'Name',name,'NumberTitle','off');
     set(subfig3d,'position',[100 100 500 300])%
     axescapture3d=axes('Units','normalized','Position',[0.01 0.09 0.98 0.91],'visible','off');	  
-    ifpatch=get(checkpatch,'Value');
-
-	if undefv
-		Item3D=3;%Deformed shape & undeformed mesh
-	else
-		Item3D=1;%Deformed shape only
-	end
-	Data3D=1;%Vector sum of Displacement
+	scale=str2num(get(scale_tex,'String'));
+	mode=shapes{lengthindex}(:,modeindex);
+	Item3D=get(popup_3dItem,'Value');
+	Data3D=get(popup_3dData,'Value');
+	ifSurface=get(popup_3dStyle,'Value');
 	ifColorBar=1;%draw color bar
-    dispshp2(lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifpatch,ifColorBar);
+    dispshp2(lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifSurface,ifColorBar);
 	%dispshp2(undefv,lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,ifpatch);
     label_title=uicontrol(subfig3d,...
         'Style','text','units','normalized',...
@@ -847,6 +856,10 @@ label_title=uicontrol(subfig,...
 	'String',label);
 %------------------------------------------------------------------------------------------
 
+	case 41
+		compareout_cb(1)
+	case 42
+		compareout_cb(1)
 end
 
 
