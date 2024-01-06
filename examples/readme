@@ -1,0 +1,5 @@
+CUFSM matlab files and scripts provided in examples folder.
+
+Analysis performed on earlier version of CUFSM (circa 2006), some modifications may be needed to run on recent version.
+In particular the change of routine strip.m to stripmain.m is likely to cause issues with scripts, also options
+in the plotting routines have changed, so also likely to cause some issues.
