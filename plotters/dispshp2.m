@@ -84,7 +84,7 @@ modeDisp=reshape(mode,4*nNd,[]);
 %dispNorm_lgFuncs=vecnorm(modeDisp); %function "vecnorm" is not supported by Matlab2016
 dispNorm_lgFuncs=zeros(1,size(modeDisp,2));
 for iFunc=1:size(modeDisp,2)
-	dispNorm_lgFuncs=norm(modeDisp(:,iFunc));
+	dispNorm_lgFuncs(iFunc)=norm(modeDisp(:,iFunc));
 end
 
 %if the deformation corresponding to a longi-function is very small (let's say smaller than 1/50 of the largest one), we don't need to care much about this small sub-deformation when plotting

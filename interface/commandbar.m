@@ -450,16 +450,19 @@ p3a = uitoggletool(t,'TooltipString','Pan',...
                 'commandbar_cb(51);']);
                 load pan;
                 p3a.CData = cdata;
+				pan off
 p3b = uitoggletool(t,'TooltipString','Zoom',...
                 'ClickedCallback',[...
                 'commandbar_cb(52);']);
                 load zoom
                 p3b.CData = zoomCData;
+				zoom off
 p3c = uitoggletool(t,'TooltipString','Rotate',...
                 'ClickedCallback',[...
                 'commandbar_cb(53);']);
                 load rotate
                 p3c.CData = cdata;
+				rotate3d off
 % %CUFSM
 spacer = uipushtool(t);
                 [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);

@@ -331,7 +331,7 @@ switch num
             elseif strcmp(HPBC,'S-C')|strcmp(HPBC,'C-S')
                 y_shapes(i,:)=sin((HPm_all{lengthindex}(i)+1)*pi*x_length/HPlengths(lengthindex))+(HPm_all{lengthindex}(i)+1)*sin(HPm_all{lengthindex}(i)*pi*x_length/HPlengths(lengthindex))/HPm_all{lengthindex}(i);
             elseif strcmp(HPBC,'C-F')|strcmp(HPBC,'F-C')
-                y_shapes(i,:)=1-cos((HPm_all{lengthindex}(i)-0.5)*x_length/HPlengths(lengthindex));
+                y_shapes(i,:)=1-cos((HPm_all{lengthindex}(i)-0.5)*pi*x_length/HPlengths(lengthindex));
             elseif strcmp(HPBC,'C-G')|strcmp(HPBC,'G-C')
                 y_shapes(i,:)=sin((HPm_all{lengthindex}(i)-0.5)*pi*x_length/HPlengths(lengthindex)).*sin(pi*x_length/HPlengths(lengthindex)/2);
             end
