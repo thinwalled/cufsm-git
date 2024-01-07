@@ -27,26 +27,35 @@ switch num
         else
             unsymm=1;
         end
-        %assign values based on principal or geometric bending
-        principalv=get(principal,'Value');
-        if principalv==1
-            M11=str2num(get(M11edit,'String'));
-            M22=str2num(get(M22edit,'String'));
-            Mxx=0;
-            Mzz=0;
-        else
-            Mxx=str2num(get(Mxxedit,'String'));
-            Mzz=str2num(get(Mzzedit,'String'));
-            [M11,M22]=MxxtoM11(Mxx,Mzz,Ixx,Izz,Ixz,thetap,I11,I22,restrainedv);
-            set(M11edit,'String',num2str(M11));
-            set(M22edit,'String',num2str(M22));
-            M11=0;
-            M22=0;
-        end
+        %prior to 2024 switched between Mxx,Mzz and M11,M22 after simply
+        %allowed them both to exist and let user define what moments they
+        %want to include.
+            % %assign values based on principal or geometric bending
+            % principalv=get(principal,'Value');
+            % if principalv==1
+            %     M11=str2num(get(M11edit,'String'));
+            %     M22=str2num(get(M22edit,'String'));
+            %     Mxx=0;
+            %     Mzz=0;
+            % else
+            %     Mxx=str2num(get(Mxxedit,'String'));
+            %     Mzz=str2num(get(Mzzedit,'String'));
+            %     [M11,M22]=MxxtoM11(Mxx,Mzz,Ixx,Izz,Ixz,thetap,I11,I22,restrainedv);
+            %     set(M11edit,'String',num2str(M11));
+            %     set(M22edit,'String',num2str(M22));
+            %     M11=0;
+            %     M22=0;
+            % end
+        M11=str2num(get(M11edit,'String'));
+        M22=str2num(get(M22edit,'String'));
+        Mxx=str2num(get(Mxxedit,'String'));
+        Mzz=str2num(get(Mzzedit,'String'));     
         %bimoment
         B=str2num(get(Bedit,'String'));
+        %generate stresses
         inode=stresgen(node,P,Mxx,Mzz,M11,M22,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm);
         inode=warp_stress(inode,prop,1,0,B,0,0,Cw,0,w,0);
+        %update plot
         scale=str2num(get(scale_tex,'String'));
         maxstress=max([inode(:,8);0]);
         set(maxstress_tex,'String',num2str(maxstress));
@@ -62,14 +71,12 @@ switch num
             M11y=str2num(get(M11yedit,'String'));
             M22y=str2num(get(M22yedit,'String'));
             set(PonPyedit,'String',num2str(P/Py));
-            if principalv==1
-                set(M11onM11yedit,'String',num2str(M11/M11y));
-                set(M22onM22yedit,'String',num2str(M22/M22y));
-            else %geometric bending
-                [M11,M22]=MxxtoM11(Mxx,Mzz,Ixx,Izz,Ixz,thetap,I11,I22,restrainedv);
-                set(M11onM11yedit,'String',num2str(M11/M11y));
-                set(M22onM22yedit,'String',num2str(M22/M22y));
-            end
+            %Convert all moments to principal moments
+            [M11g,M22g]=MxxtoM11(Mxx,Mzz,Ixx,Izz,Ixz,thetap,I11,I22,restrainedv);
+            M11=M11+M11g;
+            M22=M22+M22g;
+            set(M11onM11yedit,'String',num2str(M11/M11y));
+            set(M22onM22yedit,'String',num2str(M22/M22y));
             [beta,theta,phi] = PMMtoBetaThetaPhi(P/Py,M11/M11y,M22/M22y);
             set(Betaedit,'String',num2str(beta));
             set(Thetaedit,'String',num2str(theta));
@@ -92,17 +99,19 @@ switch num
     
     case 2
         %----------------------------------------------------
-        %principal/geometric radio button
-        set(principal,'Value',1);
-        set(geometric,'Value',0);
-        loading_cb(1);
+        %deprecated in 2024, only use restrained assumption on/off
+            % %principal/geometric radio button
+            % set(principal,'Value',1);
+            % set(geometric,'Value',0);
+            loading_cb(1);
         %----------------------------------------------------
     case 3
         %----------------------------------------------------
-        %principal/geometric radio button
-        set(principal,'Value',0);
-        set(geometric,'Value',1);
-        loading_cb(1);
+        %deprecated in 2024, only use restrained assumption on/off
+            % %principal/geometric radio button
+            % set(principal,'Value',0);
+            % set(geometric,'Value',1);
+            loading_cb(1);
         %----------------------------------------------------
     case 4
         %----------------------------------------------------
@@ -203,7 +212,7 @@ switch num
     case 20
         %----------------------------------------------------
         %Drive demand based on generalized PMM demand
-        Py=str2num(get(Pyedit,'String'))
+        Py=str2num(get(Pyedit,'String'));
         M11y=str2num(get(M11yedit,'String'));
         M22y=str2num(get(M22yedit,'String'));
         P=str2num(get(PonPyedit,'String'))*Py;
@@ -271,6 +280,13 @@ switch num
         %Read applied loads and update the stress plot
         P=str2num(get(Pedit,'String'));
         %moments
+        M11=str2num(get(M11edit,'String'));
+        M22=str2num(get(M22edit,'String'));
+        Mxx=str2num(get(Mxxedit,'String'));
+        Mzz=str2num(get(Mzzedit,'String'));     
+        %bimoment
+        B=str2num(get(Bedit,'String'));
+        %generate stresses
         %determine if restrained bending
         restrainedv=get(restrained,'Value');
         if restrainedv==1
@@ -278,26 +294,15 @@ switch num
         else
             unsymm=1;
         end
-        %assign values based on principal or geometric bending
-        principalv=get(principal,'Value');
-        if principalv==1
-            M11=str2num(get(M11edit,'String'));
-            M22=str2num(get(M22edit,'String'));
-            Mxx=0;
-            Mzz=0;
-        else
-            Mxx=str2num(get(Mxxedit,'String'));
-            Mzz=str2num(get(Mzzedit,'String'));
-            [M11,M22]=MxxtoM11(Mxx,Mzz,Ixx,Izz,Ixz,thetap,I11,I22,restrainedv)
-            set(M11edit,'String',num2str(M11));
-            set(M22edit,'String',num2str(M22));
-            M11=0;
-            M22=0;
-        end
-        %bimoment
-        B=str2num(get(Bedit,'String'));
         inode=stresgen(node,P,Mxx,Mzz,M11,M22,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm);
         inode=warp_stress(inode,prop,1,0,B,0,0,Cw,0,w,0);
+        %update plot
+        scale=str2num(get(scale_tex,'String'));
+        maxstress=max([inode(:,8);0]);
+        set(maxstress_tex,'String',num2str(maxstress));
+        minstress=min([inode(:,8);0]);
+        set(minstress_tex,'String',num2str(minstress));
+        crossect(inode,elem,axesstres,springs,constraints,flags)
         %write temp. displayed stress to actual variable
         node=inode; 
         %back to pre-processor 
