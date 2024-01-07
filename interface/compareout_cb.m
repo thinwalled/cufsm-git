@@ -144,7 +144,7 @@ end
 
 %plot the curve with a new picked point
 compareout_cb(10)
-
+compareout_cb(1);%update the shape plottings
 %------------------------------------------------------------------------------------------
 
 case 6
@@ -171,6 +171,7 @@ if curveoption==2
 end
 %plot the curve with a new picked point
 compareout_cb(10)
+compareout_cb(1);%update the shape plottings
 %------------------------------------------------------------------------------------------
 
 case 7
@@ -188,6 +189,7 @@ compareout_cb(10)
 % filedisplay=str2num(get(filetoplot_tex,'String'));
 % picpoint=[lengths(lengthindex) curve(lengthindex,2,modeindex)]; 
 % thecurve2(curvecell,filenamecell,filedisplay,minopt,logopt,axescurve,xmin,xmax,ymin,ymax,maxmode,picpoint);
+compareout_cb(1);%update the shape plottings
 %------------------------------------------------------------------------------------------
 
 case 8
@@ -205,6 +207,7 @@ compareout_cb(10)
 % filedisplay=str2num(get(filetoplot_tex,'String'));
 % picpoint=[lengths(lengthindex) curve(lengthindex,2,modeindex)]; 
 % thecurve2(curvecell,filenamecell,filedisplay,minopt,logopt,axescurve,xmin,xmax,ymin,ymax,maxmode,picpoint);
+compareout_cb(1);%update the shape plottings
 %------------------------------------------------------------------------------------------
 
 case 9
@@ -336,6 +339,7 @@ compareout_cb(10)
 % filedisplay=str2num(get(filetoplot_tex,'String'));
 % picpoint=[lengths(lengthindex) curve(lengthindex,2,modeindex)]; 
 % thecurve2(curvecell,filenamecell,filedisplay,minopt,logopt,axescurve,xmin,xmax,ymin,ymax,maxmode,picpoint);
+compareout_cb(1);%update the shape plottings
 %------------------------------------------------------------------------------------------
 
 case 14
@@ -357,6 +361,7 @@ compareout_cb(10)
 % filedisplay=str2num(get(filetoplot_tex,'String'));
 % picpoint=[lengths(lengthindex) curve(lengthindex,2,modeindex)]; 
 % thecurve2(curvecell,filenamecell,filedisplay,minopt,logopt,axescurve,xmin,xmax,ymin,ymax,maxmode,picpoint);
+compareout_cb(1);%update the shape plottings
 %------------------------------------------------------------------------------------------
 
 case 15
