@@ -21,7 +21,7 @@ for mn=1:totalm
     elseif strcmp(BC,'C-C')
         disp=dispm*(sin(m_a(mn)*pi/cutloc)*cos(pi/cutloc)/m_a(mn)+cos(m_a(mn)*pi/cutloc)*sin(pi/cutloc))+disp;
     elseif strcmp(BC,'S-C')|strcmp(BC,'C-S')
-        disp=dispm*(cos((m_a(mn)+1)*pi/cutloc)*(m_a(mn)+1)+(m_a(mn)+1)*cos(pi/cutloc))/m_a(mn)+disp;
+        disp=dispm*(cos((m_a(mn)+1)*pi/cutloc)*(m_a(mn)+1)+(m_a(mn)+1)*cos(m_a(mn)*pi/cutloc))/m_a(mn)+disp;
     elseif strcmp(BC,'F-C')|strcmp(BC,'C-F')
         disp=dispm*((m_a(mn)-1/2)*sin((m_a(mn)-1/2)*pi/cutloc))/m_a(mn)+disp;
     elseif strcmp(BC,'G-C')|strcmp(BC,'C-G')

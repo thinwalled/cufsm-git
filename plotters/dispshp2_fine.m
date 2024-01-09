@@ -107,8 +107,8 @@ for k=1:km
               z_it2=sin(m_a(mn)*pi*(k)/(km-1))*sin(pi*(k)/(km-1)); 
           elseif strcmp(BC,'S-C')|strcmp(BC,'C-S')
               %stand for z "it" the scale change for 3 dimensional plot
-              z_it1=sin((m_a(mn)+1)*pi*(k-1)/(km-1))+(m_a(mn)+1)*sin(pi*(k-1)/(km-1))/m_a(mn);
-              z_it2=(sin((m_a(mn)+1)*pi*(k)/(km-1))+(m_a(mn)+1)*sin(pi*(k)/(km-1))/m_a(mn));
+              z_it1=sin((m_a(mn)+1)*pi*(k-1)/(km-1))+(m_a(mn)+1)*sin(m_a(mn)*pi*(k-1)/(km-1))/m_a(mn);
+              z_it2=(sin((m_a(mn)+1)*pi*(k)/(km-1))+(m_a(mn)+1)*sin(m_a(mn)*pi*(k)/(km-1))/m_a(mn));
           elseif strcmp(BC,'F-C')|strcmp(BC,'C-F')
               z_it1=1-cos((m_a(mn)-1/2)*pi*(k-1)/(km-1));
               z_it2=1-cos((m_a(mn)-1/2)*pi*(k)/(km-1));

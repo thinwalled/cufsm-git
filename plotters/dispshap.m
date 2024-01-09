@@ -89,8 +89,8 @@ for i=1:length(elem(:,1))
                 dbarm=dbar*sin(m_a(mn)*pi/cutloc)*sin(pi/cutloc)+dbarm;
                 dlbarm=dlbar*sin(m_a(mn)*pi/cutloc)*sin(pi/cutloc)+dlbarm;
             elseif strcmp(BC,'S-C')|strcmp(BC,'C-S')
-                dbarm=dbar*(sin((m_a(mn)+1)*pi/cutloc)+(m_a(mn)+1)*sin(pi/cutloc)/m_a(mn))+dbarm;
-                dlbarm=dlbar*(sin((m_a(mn)+1)*pi/cutloc)+(m_a(mn)+1)*sin(pi/cutloc)/m_a(mn))+dlbarm;
+                dbarm=dbar*(sin((m_a(mn)+1)*pi/cutloc)+(m_a(mn)+1)*sin(m_a(mn)*pi/cutloc)/m_a(mn))+dbarm;
+                dlbarm=dlbar*(sin((m_a(mn)+1)*pi/cutloc)+(m_a(mn)+1)*sin(m_a(mn)*pi/cutloc)/m_a(mn))+dlbarm;
             elseif strcmp(BC,'F-C')|strcmp(BC,'C-F')
                 dbarm=dbar*(1-cos((m_a(mn)-1/2)*pi/cutloc))+dbarm;
                 dlbarm=dlbar*(1-cos((m_a(mn)-1/2)*pi/cutloc))+dlbarm;
