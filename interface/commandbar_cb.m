@@ -38,6 +38,9 @@ global ed_m ed_neigs solutiontype togglesignature togglegensolution popup_BC tog
 global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_local ed_other NatBasis ModalBasis toggleCouple popup_load axesoutofplane axesinplane axes3d lengthindex modeindex spaceindex longitermindex b_v_view modename spacename check_3D cutface_edit len_cur mode_cur space_cur longterm_cur modes SurfPos scale twod threed undef scale_tex
 %output from compareout
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
+%by S. Jin from commandbar
+global m5_ifVectorize value_ifVec
+
 %
 %-------------------------------------------------------------------
 %
@@ -567,7 +570,11 @@ if ~isempty(curve)&~isempty(shapes)%&curve{1}(1,1)~=0&shapes{1}(1,1)~=0
             %switch question2, case 'Alternate Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,2,springs,constraints);,watchoff;
             %                  case 'Robust Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,1,springs,constraints);,watchoff;,end,
             %watchon;,[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);,watchoff;
-            [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+			if m5_ifVectorize.Checked
+				[curve,shapes]=stripmain_vec(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+			else
+				[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+			end
 			clascell={};
 			clas=[];
             compareout(1);
@@ -577,7 +584,11 @@ elseif ~isempty(prop)&~isempty(node)&~isempty(elem)&~isempty(lengths)&~isempty(B
     %switch question2, case 'Alternate Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,2,springs,constraints);,watchoff;
     %				   case 'Robust Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,1,springs,constraints);,watchoff;,end,
     %watchon;,[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);,watchoff;
-    [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+	if m5_ifVectorize.Checked
+		[curve,shapes]=stripmain_vec(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+	else
+		[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+	end
 	clascell={};
 	clas=[];
     compareout(1);
@@ -593,6 +604,15 @@ if screen==4;
 end
 
 %-------------------------------------------------------------------
+case 1101
+	if m5_ifVectorize.Checked
+		m5_ifVectorize.Checked=matlab.lang.OnOffSwitchState.off;
+		value_ifVec=false;
+	else
+		m5_ifVectorize.Checked=matlab.lang.OnOffSwitchState.on;
+		value_ifVec=true;
+	end
+	%Should better keep the showing of this menu...
 
 case 12
 %-------------------------------------------------------------------
