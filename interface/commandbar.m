@@ -25,7 +25,8 @@ global ed_m ed_neigs solutiontype togglesignature togglegensolution popup_BC tog
 global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_local ed_other NatBasis ModalBasis toggleCouple popup_load axesoutofplane axesinplane axes3d lengthindex modeindex spaceindex longitermindex b_v_view modename spacename check_3D cutface_edit len_cur mode_cur space_cur longterm_cur modes SurfPos scale twod threed undef scale_tex
 %output from compareout
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
-%
+%by S. Jin from commandbar
+global m5_ifVectorize value_ifVec
 %
 %-----------------------------------------------------------------------------------
 %Navigation and Control Buttons Across the Top
@@ -228,6 +229,12 @@ m5 = uimenu(fig,'Label','2. Analysis');
 m5a = uimenu(m5,'Label','Elastic Buckling',...
                 'Callback',[...
                 'commandbar_cb(11);']);
+m5_ifVectorize=uimenu(m5,'Label','Vectorizing the computation','Separator','on','Callback','commandbar_cb(1101)');
+if value_ifVec
+	m5_ifVectorize.Checked=matlab.lang.OnOffSwitchState.on;
+else
+	m5_ifVectorize.Checked=matlab.lang.OnOffSwitchState.off;
+end
 %Output
 m5 = uimenu(fig,'Label','3. Output'); 
 m5a = uimenu(m5,'Label','Analysis Post-Processor',...
