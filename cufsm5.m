@@ -1,12 +1,13 @@
 function [] = cufsm5()
-    %CUFSM=Constrained and Unconstrained Finite Strip Method
-    %
-    %Matlab allows coding inside the GUI control callbacks
-    %Matlab Compiler for making standalone executable interfaces does not
-    %In order for both versions to be the same (Matlab and standalone) Callbacks must be in functions
-    %In order for me to re-write the callbacks global variables are used extensively (this approach is generally discouraged)
-    %newer versions of matlab have created other ways to handle this; however this is a legacy decision.
-    %
+    % CUFSM - Constrained and Unconstrained Finite Strip Method
+    % High-level history of CUFSM can be found in NEWS.md file at https://github.com/thinwalled/cufsm-git.
+
+    % MATLAB allows coding inside the GUI control callbacks
+    % MATLAB Compiler for making standalone executable interfaces does not
+    % In order for both versions to be the same (MATLAB and standalone) Callbacks must be in functions
+    % In order for me to re-write the callbacks global variables are used extensively (this approach is generally discouraged)
+    % newer versions of MATLAB have created other ways to handle this; however this is a legacy decision.
+
     %general
     global currentlocation fig screen prop node elem lengths curve shapes clas springs constraints GBTcon BC m_all neigs version screen zoombtn panbtn rotatebtn
     %output from pre2
@@ -21,9 +22,8 @@ function [] = cufsm5()
     global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_local ed_other NatBasis ModalBasis toggleCouple popup_load axesoutofplane axesinplane axes3d lengthindex modeindex spaceindex longitermindex b_v_view modename spacename check_3D cutface_edit len_cur mode_cur space_cur longterm_cur modes SurfPos scale twod threed undef scale_tex
     %output from compareout
     global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode modedisplay modestoplot_tex
-    %
-    %
-    %path statements to functions and interface usful for organization in matlab, not useful in standalone version
+
+    %path statements to functions and interface usful for organization in MATLAB, not useful in standalone version
     wpath = what;
     currentlocation = wpath.path;
 
@@ -84,7 +84,7 @@ function [] = cufsm5()
     %Note some uictontrols do not use this, the following tabdlg, inputdlg and
     %msgbox so here the web recommends changing the built-in function and
     %changing FactoryUicontrolFontSize to DefaultFontSize, this is clumsy, for
-    %now just living with very small font size, maybe future matlab cleans this
+    %now just living with very small font size, maybe future MATLAB cleans this
     %up.
     %
 
@@ -108,3 +108,4 @@ function [] = cufsm5()
     % image(apic);
     % axis('equal')
     % axis('off')
+end
