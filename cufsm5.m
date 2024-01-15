@@ -1,7 +1,11 @@
 function []=cufsm5()
 %CUFSM=Constrained and Unconstrained Finite Strip Method
-% High-level history of CUFSM can be found in NEWS.md file at https://github.com/thinwalled/cufsm-git.
+%This is the main script to bring the CUFSM GUI to life
+% www.ce.jhu.edu/cufsm for more information
+% https://github.com/thinwalled/cufsm-git for latest version and releases
+%High-level history of CUFSM can be found in NEWS.md file at https://github.com/thinwalled/cufsm-git.
 
+%%Global variable calls
 %Matlab allows coding inside the GUI control callbacks
 %Matlab Compiler for making standalone executable interfaces does not
 %In order for both versions to be the same (Matlab and standalone) Callbacks must be in functions
@@ -24,6 +28,7 @@ global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_loca
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
 %
 %
+%%Path statements for local computer
 %path statements to functions and interface usful for organization in matlab, not useful in standalone version
 wpath=what;
 currentlocation=wpath.path;
@@ -53,7 +58,7 @@ elseif ~isdeployed %mac! or unix
     %addpath([currentlocation,'/abaqusmaker']);
 end
 
-%-----------------------------------------------------------------------------------
+%%-----------------------------------------------------------------------------------
 %Title and menus
 %-----------------------------------------------------------------------------------
 version=['5.06'];
