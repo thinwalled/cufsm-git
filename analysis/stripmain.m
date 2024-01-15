@@ -1,8 +1,9 @@
-function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs)
+function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,ifVec)
 %HISTORY
 %June 2010, complete update to new Boundary conditions, Z. Li, B. Schafer
 %2023 strip.m became a reserved function in Matlab changed name to stripmain.m to avoid conflict
-%
+%Jan 2024, supporting for vectorized computation. Sheng Jin
+% 
 %INPUTS
 %prop: [matnum Ex Ey vx vy G] 6 x nmats
 %node: [node# x z dofx dofz dofy dofrot stress] nnodes x 8;
@@ -39,7 +40,8 @@ function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBT
 %'C-G' clamped-guided supported boundary condition at loaded edges
 %m_all: m_all{length#}=[longitudinal_num# ... longitudinal_num#],longitudinal terms m for all the lengths in cell notation
 % each cell has a vector including the longitudinal terms for this length
-%neigs - the number of eigenvalues to be determined at length (default=10)
+%neigs - the number of eigenvalues to be determined at length (default=20)
+%ifVec: if vectroizing the calculation, false by default
 
 %OUTPUTS
 %curve: buckling curve (load factor) for each length
@@ -67,10 +69,10 @@ function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBT
 
 
 %GUI WAIT BAR FOR FINITE STRIP ANALYSIS
-%wait_message=waitbar(0,'Performing Finite Strip Analysis','position',[150 300 384 68],...
-%    'CreateCancelBtn',...
-%    'setappdata(gcbf,''canceling'',1)');
-%setappdata(wait_message,'canceling',0)
+wait_message=waitbar(0,'Performing Finite Strip Analysis','position',[150 300 384 68],...
+    'CreateCancelBtn',...
+    'setappdata(gcbf,''canceling'',1)');
+setappdata(wait_message,'canceling',0)
 %MATRIX SIZES
 nnodes = length(node(:,1));
 nelems = length(elem(:,1));
@@ -85,6 +87,25 @@ nlengths = length(lengths);
 
 %GENERATE STRIP WIDTH AND DIRECTION ANGLE
 [elprop]=elemprop(node,elem,nnodes,nelems);
+
+%SET SWITCH AND PREPARE BASE VECTORS (R) FOR cFSM ANALYSIS
+if sum(GBTcon.glob)+sum(GBTcon.dist)+sum(GBTcon.local)+sum(GBTcon.other)>0
+	%turn on modal classification analysis
+	cFSM_analysis=1;
+else
+	%no modal classification constraints are engaged
+	cFSM_analysis=0;
+end
+%determine if there are user input neigs and ifVec; otherwise set them to default
+if nargin<11
+	ifVec=false;
+	if nargin<10
+		neigs=20;
+	end
+end
+if isempty(neigs)
+	neigs=20;
+end
 
 %---------------------------------------------------------------------------------
 
@@ -104,23 +125,28 @@ while l<nlengths
     %
     totalm=length(m_a);%Total number of longitudinal terms
     
-    %SET SWITCH AND PREPARE BASE VECTORS (R) FOR cFSM ANALYSIS
-    if sum(GBTcon.glob)+sum(GBTcon.dist)+sum(GBTcon.local)+sum(GBTcon.other)>0
-        %turn on modal classification analysis
-        cFSM_analysis=1;
-        %generate natural base vectors for axial compression loading
-        [b_v_l,ngm,ndm,nlm]=base_column(node,elem,prop,a,BC,m_a);
-    else
-        %no modal classification constraints are engaged
-        cFSM_analysis=0;
-    end
+%    %SET SWITCH AND PREPARE BASE VECTORS (R) FOR cFSM ANALYSIS
+%    if sum(GBTcon.glob)+sum(GBTcon.dist)+sum(GBTcon.local)+sum(GBTcon.other)>0
+%        %turn on modal classification analysis
+%        cFSM_analysis=1;
+%        %generate natural base vectors for axial compression loading
+%        [b_v_l,ngm,ndm,nlm]=base_column(node,elem,prop,a,BC,m_a);
+%    else
+%        %no modal classification constraints are engaged
+%        cFSM_analysis=0;
+%    end
     %test the time loop to see if we need the waitbar for assembly
        %if length(m_a)*length(node(:,1))>=120
        %    wait_message_elem=waitbar(0,'Assembling stiffness matrices','position',[150 300-68 384 68]);
        %end
     %ZERO OUT THE GLOBAL MATRICES
-    K=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
-    Kg=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
+	if ifVec
+		K=[];
+		Kg=[];
+	else
+		K=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
+		Kg=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
+	end
     %
     %ASSEMBLE THE GLOBAL STIFFNESS MATRICES
     for i=1:nelems
@@ -134,23 +160,45 @@ while l<nlengths
         vx=prop(row,4);
         vy=prop(row,5);
         G=prop(row,6);
-        [k_l]=klocal(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
-        %Generate geometric stiffness matrix (kg) in local coordinates
         Ty1=node(elem(i,2),8)*t;
         Ty2=node(elem(i,3),8)*t;
-        [kg_l]=kglocal(a,b,Ty1,Ty2,BC,m_a);
-        %Transform k and kg into global coordinates
-        alpha=elprop(i,3);
-        [k,kg]=trans(alpha,k_l,kg_l,m_a);
-        %Add element contribution of k to full matrix K and kg to Kg
         nodei=elem(i,2);
         nodej=elem(i,3);
-        [K,Kg]=assemble(K,Kg,k,kg,nodei,nodej,nnodes,m_a);
-        %WAITBAR MESSAGE for assmebly
-           %if length(m_a)*length(node(:,1))>=120
-           %    info=['Elememt ',num2str(i),' done.'];
-           %    waitbar(i/nelems,wait_message_elem);
-           %end
+		if ~ifVec
+			[k_l]=klocal(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
+			%Generate geometric stiffness matrix (kg) in local coordinates
+			[kg_l]=kglocal(a,b,Ty1,Ty2,BC,m_a);
+			%Transform k and kg into global coordinates
+			alpha=elprop(i,3);
+			[k,kg]=trans(alpha,k_l,kg_l,m_a);
+			%Add element contribution of k to full matrix K and kg to Kg
+			[K,Kg]=assemble(K,Kg,k,kg,nodei,nodej,nnodes,m_a);
+			%WAITBAR MESSAGE for assmebly
+			%if length(m_a)*length(node(:,1))>=120
+			%    info=['Elememt ',num2str(i),' done.'];
+			%    waitbar(i/nelems,wait_message_elem);
+		else
+			[k_l]=klocal_vec(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
+			[kg_l]=kglocal_vec(a,b,Ty1,Ty2,BC,m_a);
+			[k,kg]=trans_vec(node(elem(i,2),2),node(elem(i,2),3),node(elem(i,3),2),node(elem(i,3),3),k_l,kg_l,m_a);
+			assembleLoc=reshape(ones(4,2*totalm).*[2*nodei-1;2*nodei;2*nodej-1;2*nodej]+(0:2:4*totalm-2).*nnodes,8*totalm,1);
+			if i==1
+				nnz_k=nnz(k);
+				nnz_kg=nnz(kg);
+				
+				%If a node is shared by two elements, about 1/4 of their nonzero data overlap each other
+				%times nodes shared: 2*nelems-nnodes;
+				%elements not parallel to the x- and z- axes contains more nonzero data, and the overlaps at the intersection nodes is different
+				%so a coefficient of 1.5 is used.
+				K=spalloc(4*nnodes*totalm,4*nnodes*totalm,ceil(nnz_k*(nelems-(2*nelems-nnodes)/4)*1.5));
+				Kg=spalloc(4*nnodes*totalm,4*nnodes*totalm,ceil(nnz_kg*(nelems-(2*nelems-nnodes)/4)*1.5));
+				K(assembleLoc,assembleLoc)=k;
+				Kg(assembleLoc,assembleLoc)=kg;
+			else
+				K(assembleLoc,assembleLoc)=K(assembleLoc,assembleLoc)+k;
+				Kg(assembleLoc,assembleLoc)=Kg(assembleLoc,assembleLoc)+kg;
+			end
+		end
     end
     %if exist('wait_message_elem')==1
     %    if ishandle(wait_message_elem)
@@ -221,6 +269,8 @@ while l<nlengths
     
     %GENERATION OF cFSM CONSTRAINT MATRIX
     if cFSM_analysis==1
+		%generate natural base vectors for axial compression loading
+		[b_v_l,ngm,ndm,nlm]=base_column(node,elem,prop,a,BC,m_a);
         %PERFORM ORTHOGONALIZATION IF GBT-LIKE MODES ARE ENFORCED
         b_v=base_update(GBTcon.ospace,0,b_v_l,a,m_a,node,elem,prop,ngm,ndm,nlm,BC,GBTcon.couple,GBTcon.orth);%no normalization is enforced: 0:  m
         %assign base vectors to constraints
@@ -229,7 +279,7 @@ while l<nlengths
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
         %no modal constraints are activated therefore
-        Rmode=eye(4*nnodes*totalm);%activate modal constraints
+		Rmode=speye(4*nnodes*totalm);%activate modal constraints
     end
     %
     %CREATE FINAL CONSTRAINT MATRIX
@@ -256,36 +306,46 @@ while l<nlengths
     %INTRODUDCE CONSTRAINTS AND REDUCE K MATRICES TO FREE PARTS ONLY
     Kff=R'*K*R;
     Kgff=R'*Kg*R;
+	if cFSM_analysis==1
+		if nnz(Kff)<numel(Kff)/3
+			Kff=sparse(Kff);
+			Kgff=sparse(Kgff);
+		end
+	end
+    N=max(min(2*neigs,length(Kff(1,:))),1);
+    [modes,lf]=eigs(Kff,(Kgff+Kgff')/2,N,'SM','Display',0);
     
-    %SOLVE THE EIGENVALUE PROBLEM
-    %Determine which solver to use
-    %small problems usually use eig, and large problems use eigs.
-    %the eigs solver is not as stable as the full eig solver...
-    %LAPACK reciprocal condition estimator
-    rcond_num=rcond(full(Kgff\Kff));
-    %Here, assume when rcond_num is bigger than half of the eps, eigs can provide
-    %reliable solution. Otherwise, eig, the robust solver should be used.
-    if rcond_num>=eps/2
-        eigflag=2;%eigs
-    else
-        eigflag=1;%eig
-    end
-    %determine if there is a user input neigs; otherwise set it to
-    %default 10.
-    if nargin<10|isempty(neigs)
-        neigs=20;
-    end
-    if eigflag==1
-        [modes,lf]=eig(full(Kff),full(Kgff));
-    else
-        N=max(min(2*neigs,length(Kff(1,:))),1);
-        if N==1|N==length(Kff(1,:))
-            [modes,lf]=eig(full(Kff),full(Kgff));
-        else
-        %pull out 10 eigenvalues
-        [modes,lf]=eigs(full(Kgff\Kff),N,'SM');
-        end
-    end
+%%   %eigs seems now much stable than before
+%    %SOLVE THE EIGENVALUE PROBLEM
+%    %Determine which solver to use
+%    %small problems usually use eig, and large problems use eigs.
+%    %the eigs solver is not as stable as the full eig solver...
+%    %LAPACK reciprocal condition estimator
+%    rcond_num=rcond(full(Kgff\Kff));
+%    %Here, assume when rcond_num is bigger than half of the eps, eigs can provide
+%    %reliable solution. Otherwise, eig, the robust solver should be used.
+%    if rcond_num>=eps/2
+%        eigflag=2;%eigs
+%    else
+%        eigflag=1;%eig
+%    end
+%    %determine if there is a user input neigs; otherwise set it to
+%    %default 10.
+%    if nargin<10|isempty(neigs)
+%        neigs=20;
+%    end
+%    if eigflag==1
+%        [modes,lf]=eig(full(Kff),full(Kgff));
+%    else
+%        N=max(min(2*neigs,length(Kff(1,:))),1);
+%        if N==1|N==length(Kff(1,:))
+%            [modes,lf]=eig(full(Kff),full(Kgff));
+%        else
+%        %pull out 10 eigenvalues
+%        [modes,lf]=eigs(full(Kgff\Kff),N,'SM');
+%        end
+%    end
+%%
     %CLEAN UP THE EIGEN SOLUTION
     %eigenvalues are along the diagonal of matrix lf
     lf=diag(lf);
@@ -333,12 +393,12 @@ while l<nlengths
     %
     %WAITBAR MESSAGE
       %info=['Length ',num2str(lengths(l)),' done.'];
-      %waitbar(l/nlengths,wait_message);
+      waitbar(l/nlengths,wait_message,sprintf('Performing Finite Strip Analysis: %d/%d done.',l,nlengths));
     %
 end
 %THAT ENDS THE LOOP OVER ALL THE LENGTHS
 %--------------------------------------------------------------------------
-  %if ishandle(wait_message)
-  %    delete(wait_message);
-  %end
+if ishandle(wait_message)
+	delete(wait_message);
+end
 % %

@@ -571,7 +571,7 @@ if ~isempty(curve)&~isempty(shapes)%&curve{1}(1,1)~=0&shapes{1}(1,1)~=0
             %                  case 'Robust Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,1,springs,constraints);,watchoff;,end,
             %watchon;,[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);,watchoff;
 			if m5_ifVectorize.Checked
-				[curve,shapes]=stripmain_vec(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+				[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,true);
 			else
 				[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
 			end
@@ -585,7 +585,7 @@ elseif ~isempty(prop)&~isempty(node)&~isempty(elem)&~isempty(lengths)&~isempty(B
     %				   case 'Robust Solver',watchon;,[curve,shapes]=strip(prop,node,elem,lengths,1,springs,constraints);,watchoff;,end,
     %watchon;,[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);,watchoff;
 	if m5_ifVectorize.Checked
-		[curve,shapes]=stripmain_vec(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+		[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,true);
 	else
 		[curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
 	end

@@ -194,6 +194,7 @@ if ispc & ~isdeployed %pc   %is deployed check added due to compiler not allowin
     addpath([currentlocation,'\icons']);
     addpath([currentlocation,'\cutwp']);
     %addpath([currentlocation,'\abaqusmaker']);
+    addpath([currentlocation,'\analysis\vectorized']);
 elseif ~isdeployed %mac! or unix
     addpath([currentlocation]);
     addpath([currentlocation,'/analysis']);
