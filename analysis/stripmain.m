@@ -41,7 +41,7 @@ function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBT
 %m_all: m_all{length#}=[longitudinal_num# ... longitudinal_num#],longitudinal terms m for all the lengths in cell notation
 % each cell has a vector including the longitudinal terms for this length
 %neigs - the number of eigenvalues to be determined at length (default=20)
-%ifVec: if vectroizing the calculation, false by default
+%ifVec: flag for vectorizing the calculation, false by default (i.e. don't vectorize, use traditional code
 
 %OUTPUTS
 %curve: buckling curve (load factor) for each length
@@ -164,7 +164,7 @@ while l<nlengths
         Ty2=node(elem(i,3),8)*t;
         nodei=elem(i,2);
         nodej=elem(i,3);
-		if ~ifVec
+		if ~ifVec %traditional assembly
 			[k_l]=klocal(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
 			%Generate geometric stiffness matrix (kg) in local coordinates
 			[kg_l]=kglocal(a,b,Ty1,Ty2,BC,m_a);
@@ -177,7 +177,7 @@ while l<nlengths
 			%if length(m_a)*length(node(:,1))>=120
 			%    info=['Elememt ',num2str(i),' done.'];
 			%    waitbar(i/nelems,wait_message_elem);
-		else
+        else %vectorized assembly (faster! but a bit harder to follow)
 			[k_l]=klocal_vec(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
 			[kg_l]=kglocal_vec(a,b,Ty1,Ty2,BC,m_a);
 			[k,kg]=trans_vec(node(elem(i,2),2),node(elem(i,2),3),node(elem(i,3),2),node(elem(i,3),3),k_l,kg_l,m_a);
@@ -185,7 +185,6 @@ while l<nlengths
 			if i==1
 				nnz_k=nnz(k);
 				nnz_kg=nnz(kg);
-				
 				%If a node is shared by two elements, about 1/4 of their nonzero data overlap each other
 				%times nodes shared: 2*nelems-nnodes;
 				%elements not parallel to the x- and z- axes contains more nonzero data, and the overlaps at the intersection nodes is different
@@ -313,39 +312,39 @@ while l<nlengths
 		end
 	end
     N=max(min(2*neigs,length(Kff(1,:))),1);
+    %SOLVE THE EIGENVALUE PROBLEM    %
     [modes,lf]=eigs(Kff,(Kgff+Kgff')/2,N,'SM','Display',0);
     
-%%   %eigs seems now much stable than before
-%    %SOLVE THE EIGENVALUE PROBLEM
-%    %Determine which solver to use
-%    %small problems usually use eig, and large problems use eigs.
-%    %the eigs solver is not as stable as the full eig solver...
-%    %LAPACK reciprocal condition estimator
-%    rcond_num=rcond(full(Kgff\Kff));
-%    %Here, assume when rcond_num is bigger than half of the eps, eigs can provide
-%    %reliable solution. Otherwise, eig, the robust solver should be used.
-%    if rcond_num>=eps/2
-%        eigflag=2;%eigs
-%    else
-%        eigflag=1;%eig
-%    end
-%    %determine if there is a user input neigs; otherwise set it to
-%    %default 10.
-%    if nargin<10|isempty(neigs)
-%        neigs=20;
-%    end
-%    if eigflag==1
-%        [modes,lf]=eig(full(Kff),full(Kgff));
-%    else
-%        N=max(min(2*neigs,length(Kff(1,:))),1);
-%        if N==1|N==length(Kff(1,:))
-%            [modes,lf]=eig(full(Kff),full(Kgff));
-%        else
-%        %pull out 10 eigenvalues
-%        [modes,lf]=eigs(full(Kgff\Kff),N,'SM');
-%        end
-%    end
-%%
+    %%   %eigs seems now much stable than before
+    %    %Determine which solver to use
+    %    %small problems usually use eig, and large problems use eigs.
+    %    %the eigs solver is not as stable as the full eig solver...
+    %    %LAPACK reciprocal condition estimator
+    %    rcond_num=rcond(full(Kgff\Kff));
+    %    %Here, assume when rcond_num is bigger than half of the eps, eigs can provide
+    %    %reliable solution. Otherwise, eig, the robust solver should be used.
+    %    if rcond_num>=eps/2
+    %        eigflag=2;%eigs
+    %    else
+    %        eigflag=1;%eig
+    %    end
+    %    %determine if there is a user input neigs; otherwise set it to
+    %    %default 10.
+    %    if nargin<10|isempty(neigs)
+    %        neigs=20;
+    %    end
+    %    if eigflag==1
+    %        [modes,lf]=eig(full(Kff),full(Kgff));
+    %    else
+    %        N=max(min(2*neigs,length(Kff(1,:))),1);
+    %        if N==1|N==length(Kff(1,:))
+    %            [modes,lf]=eig(full(Kff),full(Kgff));
+    %        else
+    %        %pull out 10 eigenvalues
+    %        [modes,lf]=eigs(full(Kgff\Kff),N,'SM');
+    %        end
+    %    end
+    %%
     %CLEAN UP THE EIGEN SOLUTION
     %eigenvalues are along the diagonal of matrix lf
     lf=diag(lf);
