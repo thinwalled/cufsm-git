@@ -609,11 +609,13 @@ case 1101
 		m5_VecOn.Checked=matlab.lang.OnOffSwitchState.off;
 		m5_VecOff.Checked=matlab.lang.OnOffSwitchState.on;
 		set(p5IfVec,'State','off');
+		set(p5IfVec,'Tooltip','Normal');
 		value_ifVec=false;
 	else
 		m5_VecOn.Checked=matlab.lang.OnOffSwitchState.on;
 		m5_VecOff.Checked=matlab.lang.OnOffSwitchState.off;
 		set(p5IfVec,'State','on');
+		set(p5IfVec,'Tooltip','Vectorized');
 		value_ifVec=true;
 	end
 	%Should better keep the showing of this menu...

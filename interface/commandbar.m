@@ -364,7 +364,7 @@ p5a = uipushtool(t,'TooltipString','Elastic Buckling',...
                 [img,map] = imread('ebanalysis.png','BackgroundColor',[0.94 0.94 0.94]);
                 icon=img;
                 p5a.CData = icon;
-p5IfVec = uitoggletool(t,'TooltipString','Vectorizing the computation',...
+p5IfVec = uitoggletool(t,'Tooltip','Normal',...
                 'Separator','on',...
                 'ClickedCallback',[...
                 'commandbar_cb(1101);']);
@@ -372,8 +372,10 @@ p5IfVec = uitoggletool(t,'TooltipString','Vectorizing the computation',...
 				p5IfVec.CData = VecImage;
 if value_ifVec
 	set(p5IfVec,'State','on');
+	set(p5IfVec,'Tooltip','Vectorized');
 else
 	set(p5IfVec,'State','off');
+	set(p5IfVec,'Tooltip','Normal');
 end
 % %Output
 spacer = uipushtool(t);
