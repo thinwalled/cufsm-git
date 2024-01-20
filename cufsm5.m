@@ -187,6 +187,7 @@ if ispc & ~isdeployed %pc   %is deployed check added due to compiler not allowin
     addpath([currentlocation,'\analysis']);
     addpath([currentlocation,'\analysis\cFSM']);
     addpath([currentlocation,'\analysis\plastic']);
+    addpath([currentlocation,'\analysis\vectorized']);   
     addpath([currentlocation,'\helpers']);
     %addpath([currentlocation,'\holehelper']);
     addpath([currentlocation,'\interface']);
@@ -200,6 +201,7 @@ elseif ~isdeployed %mac! or unix
     addpath([currentlocation,'/analysis']);
     addpath([currentlocation,'/analysis/cFSM']);
     addpath([currentlocation,'/analysis/plastic']);
+    addpath([currentlocation,'/analysis/vectorized']);
     %addpath([currentlocation,'/holehelper']);
     addpath([currentlocation,'/helpers']);
     addpath([currentlocation,'/interface']);

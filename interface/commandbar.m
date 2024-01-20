@@ -229,8 +229,13 @@ m5 = uimenu(fig,'Label','2. Analysis');
 m5a = uimenu(m5,'Label','Elastic Buckling',...
                 'Callback',[...
                 'commandbar_cb(11);']);
-m5_VecOn=uimenu(m5,'Label','    Vectorized','Separator','on','Callback','commandbar_cb(1101)');
-m5_VecOff=uimenu(m5,'Label','    Normal','Callback','commandbar_cb(1101)');
+%Analysis can be Vectorized (new 2024) or normal/simple (easier to follow)
+m5_VecOn=uimenu(m5,'Label','    Vectorized','Separator','on',...
+                'Callback',...
+                'commandbar_cb(1101)');
+m5_VecOff=uimenu(m5,'Label','    Normal',...
+                'Callback',...
+                'commandbar_cb(1101)');
 if value_ifVec
 	m5_VecOn.Checked=matlab.lang.OnOffSwitchState.on;
 	m5_VecOff.Checked=matlab.lang.OnOffSwitchState.off;
@@ -271,7 +276,7 @@ m6c = uimenu(m6,'Label','CUTWP (Global Buckling Only)',...
 %                'commandbar_cb(34);']);
 
 %---------------------------------------------------------------------
-%Experiment with adding toolbar across the top like a traditional program
+%Toolbar across the top, like a traditional program
 %---------------------------------------------------------------------
  t = uitoolbar(fig);
 % 
