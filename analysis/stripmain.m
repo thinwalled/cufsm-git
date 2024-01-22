@@ -70,8 +70,7 @@ function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBT
 
 %GUI WAIT BAR FOR FINITE STRIP ANALYSIS
 wait_message=waitbar(0,'Performing Finite Strip Analysis','position',[150 300 384 68],...
-    'CreateCancelBtn',...
-    'setappdata(gcbf,''canceling'',1)');
+    'CreateCancelBtn',@closeWaitBar);
 setappdata(wait_message,'canceling',0)
 %MATRIX SIZES
 nnodes = length(node(:,1));
@@ -108,6 +107,19 @@ if isempty(neigs)
 end
 
 %---------------------------------------------------------------------------------
+%initialize the outputs.
+%calculation interruption could cause format conflictions between the uninitialized outputs to other data 
+curve=cell(nlengths,1);
+shapes=cell(nlengths,1);
+for l=1:nlengths
+	curvedata=zeros(neigs,2);
+	curvedata(:,1)=lengths(l);
+	curve{l}=curvedata;
+	m_a=m_all{l};
+	totalm=length(m_a);
+	shapedata=zeros(4*totalm*nnodes,neigs);
+	shapes{l}=shapedata;
+end
 
 %LOOP OVER ALL THE LENGTHS TO BE INVESTIGATED
 l=0; %length_index = one
@@ -392,7 +404,14 @@ while l<nlengths
     %
     %WAITBAR MESSAGE
       %info=['Length ',num2str(lengths(l)),' done.'];
-      waitbar(l/nlengths,wait_message,sprintf('Performing Finite Strip Analysis: %d/%d done.',l,nlengths));
+	  if ishandle(wait_message)
+		  if getappdata(wait_message,'canceling')
+			  break
+		  end
+		  waitbar(l/nlengths,wait_message,sprintf('Performing Finite Strip Analysis: %d/%d done.',l,nlengths));
+	  else
+		  break
+	  end
     %
 end
 %THAT ENDS THE LOOP OVER ALL THE LENGTHS
@@ -400,4 +419,9 @@ end
 if ishandle(wait_message)
 	delete(wait_message);
 end
-% %
+end
+
+function closeWaitBar(varargin)
+setappdata(gcbf,'canceling',1);
+delete(gcbf);
+end

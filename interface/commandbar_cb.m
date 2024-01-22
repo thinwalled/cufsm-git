@@ -608,16 +608,19 @@ case 1101
 	if m5_VecOn.Checked
 		m5_VecOn.Checked=matlab.lang.OnOffSwitchState.off;
 		m5_VecOff.Checked=matlab.lang.OnOffSwitchState.on;
+		[img,~] = imread('VectorizeOff.png','BackgroundColor',[0.94 0.94 0.94]);
 		set(p5IfVec,'State','off');
 		set(p5IfVec,'Tooltip','Normal');
 		value_ifVec=false;
 	else
 		m5_VecOn.Checked=matlab.lang.OnOffSwitchState.on;
 		m5_VecOff.Checked=matlab.lang.OnOffSwitchState.off;
+		[img,~] = imread('VectorizeOn.png','BackgroundColor',[0.94 0.94 0.94]);
 		set(p5IfVec,'State','on');
 		set(p5IfVec,'Tooltip','Vectorized');
 		value_ifVec=true;
 	end
+	p5IfVec.CData=img;
 	%Should better keep the showing of this menu...
 
 case 12

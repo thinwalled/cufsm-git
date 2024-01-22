@@ -373,15 +373,16 @@ p5IfVec = uitoggletool(t,'Tooltip','Normal',...
                 'Separator','on',...
                 'ClickedCallback',[...
                 'commandbar_cb(1101);']);
-				VecImage = zeros(16,16,3);VecImage(:,[1,4,5,9,12,13],:)=1;
-				p5IfVec.CData = VecImage;
 if value_ifVec
+	[img,~] = imread('VectorizeOn.png','BackgroundColor',[0.94 0.94 0.94]);
 	set(p5IfVec,'State','on');
 	set(p5IfVec,'Tooltip','Vectorized');
 else
+	[img,~] = imread('VectorizeOff.png','BackgroundColor',[0.94 0.94 0.94]);
 	set(p5IfVec,'State','off');
 	set(p5IfVec,'Tooltip','Normal');
 end
+p5IfVec.CData=img;
 % %Output
 spacer = uipushtool(t);
                 [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
