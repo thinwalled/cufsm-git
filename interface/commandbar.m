@@ -370,19 +370,19 @@ p5a = uipushtool(t,'TooltipString','Elastic Buckling',...
                 icon=img;
                 p5a.CData = icon;
 p5IfVec = uitoggletool(t,'Tooltip','Normal',...
-                'Separator','on',...
+                'Separator','off',...
                 'ClickedCallback',[...
                 'commandbar_cb(1101);']);
+load('VectorizeIcons.mat','-mat','VectorizeIcons');
 if value_ifVec
-	[img,~] = imread('VectorizeOn.png','BackgroundColor',[0.94 0.94 0.94]);
 	set(p5IfVec,'State','on');
 	set(p5IfVec,'Tooltip','Vectorized');
+	p5IfVec.CData=VectorizeIcons.On;
 else
-	[img,~] = imread('VectorizeOff.png','BackgroundColor',[0.94 0.94 0.94]);
 	set(p5IfVec,'State','off');
 	set(p5IfVec,'Tooltip','Normal');
+	p5IfVec.CData=VectorizeIcons.Off;
 end
-p5IfVec.CData=img;
 % %Output
 spacer = uipushtool(t);
                 [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
