@@ -90,7 +90,7 @@ end
 %if the deformation corresponding to a longi-function is very small (let's say smaller than 1/50 of the largest one), we don't need to care much about this small sub-deformation when plotting
 %so for all the longi-functions the corresponding sub-deformations are enough significant, the largest wave-number is what we need to take care of.
 %so this is it: Number of longitudinal segments = Largest halfwave number of the significant functions * longitudinal segments for a quarter wave *2
-km=2*longiSeg*max(m_a(dispNorm_lgFuncs>0.02*max(dispNorm_lgFuncs)))+1; %number of cross-section
+km=2*longiSeg*max(m_a(dispNorm_lgFuncs>=0.02*max(dispNorm_lgFuncs)))+1; %number of cross-section
 
 nM_a=length(m_a);% number of the longitudinal functions
 nStrip=nEdge;% strip number (same to the edges)

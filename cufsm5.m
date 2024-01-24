@@ -37,6 +37,7 @@ if ispc & ~isdeployed %pc   %is deployed check added due to compiler not allowin
     addpath([currentlocation,'\analysis']);
     addpath([currentlocation,'\analysis\cFSM']);
     addpath([currentlocation,'\analysis\plastic']);
+    addpath([currentlocation,'\analysis\vectorized']);   
     addpath([currentlocation,'\helpers']);
     %addpath([currentlocation,'\holehelper']);
     addpath([currentlocation,'\interface']);
@@ -44,11 +45,13 @@ if ispc & ~isdeployed %pc   %is deployed check added due to compiler not allowin
     addpath([currentlocation,'\icons']);
     addpath([currentlocation,'\cutwp']);
     %addpath([currentlocation,'\abaqusmaker']);
+    addpath([currentlocation,'\analysis\vectorized']);
 elseif ~isdeployed %mac! or unix
     addpath([currentlocation]);
     addpath([currentlocation,'/analysis']);
     addpath([currentlocation,'/analysis/cFSM']);
     addpath([currentlocation,'/analysis/plastic']);
+    addpath([currentlocation,'/analysis/vectorized']);
     %addpath([currentlocation,'/holehelper']);
     addpath([currentlocation,'/helpers']);
     addpath([currentlocation,'/interface']);
@@ -61,7 +64,7 @@ end
 %%-----------------------------------------------------------------------------------
 %Title and menus
 %-----------------------------------------------------------------------------------
-version=['5.06'];
+version=['5.20'];
 name=['CUFSM v',version,' -- Constrained and Unconstrained Finite Strip Method (CUFSM) Buckling Analysis of Thin-Walled Members'];
 fig=figure('Name',name,...
    	'NumberTitle','off');

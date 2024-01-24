@@ -409,7 +409,7 @@ if curveoption==1
         curve_sign(j,1)=curve{j}(modeindex,1);
         curve_sign(j,2)=curve{j}(modeindex,2);
     end
-    ymax=min([max(curve_sign(:,2)),3*median(curve_sign(:,2))]);
+    ymax=min([max(curve_sign(:,2)),3*median(curve_sign(curve_sign(:,2)>0,2))]);
 elseif curveoption==2
     xmin=1;
     ymin=0;
@@ -468,7 +468,7 @@ if curveoption==1
         curve_sign(j,1)=curve{j}(modeindex,1);
         curve_sign(j,2)=curve{j}(modeindex,2);
     end
-    ymax=min([max(curve_sign(:,2)),3*median(curve_sign(:,2))]);
+    ymax=min([max(curve_sign(:,2)),3*median(curve_sign(curve_sign(:,2)>0,2))]);
 elseif curveoption==2
     xmin=1;
     ymin=0;
@@ -628,7 +628,7 @@ for j=1:max(size(curve));
     curve_sign(j,1)=curve{j}(modeindex,1);
     curve_sign(j,2)=curve{j}(modeindex,2);
 end
-ymax=min([max(curve_sign(:,2)),3*median(curve_sign(:,2))]);
+ymax=min([max(curve_sign(:,2)),3*median(curve_sign(curve_sign(:,2)>0,2))]);
 
 set(xmin_tex,'String',num2str(xmin));
 set(xmax_tex,'String',num2str(xmax));

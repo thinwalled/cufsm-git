@@ -25,7 +25,8 @@ global ed_m ed_neigs solutiontype togglesignature togglegensolution popup_BC tog
 global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_local ed_other NatBasis ModalBasis toggleCouple popup_load axesoutofplane axesinplane axes3d lengthindex modeindex spaceindex longitermindex b_v_view modename spacename check_3D cutface_edit len_cur mode_cur space_cur longterm_cur modes SurfPos scale twod threed undef scale_tex
 %output from compareout
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
-%
+%by S. Jin from commandbar
+global m5_VecOn m5_VecOff p5IfVec value_ifVec
 %
 %-----------------------------------------------------------------------------------
 %Navigation and Control Buttons Across the Top
@@ -228,6 +229,20 @@ m5 = uimenu(fig,'Label','2. Analysis');
 m5a = uimenu(m5,'Label','Elastic Buckling',...
                 'Callback',[...
                 'commandbar_cb(11);']);
+%Analysis can be Vectorized (new 2024) or normal/simple (easier to follow)
+m5_VecOn=uimenu(m5,'Label','    Vectorized','Separator','on',...
+                'Callback',...
+                'commandbar_cb(1101)');
+m5_VecOff=uimenu(m5,'Label','    Normal',...
+                'Callback',...
+                'commandbar_cb(1101)');
+if value_ifVec
+	m5_VecOn.Checked=matlab.lang.OnOffSwitchState.on;
+	m5_VecOff.Checked=matlab.lang.OnOffSwitchState.off;
+else
+	m5_VecOn.Checked=matlab.lang.OnOffSwitchState.off;
+	m5_VecOff.Checked=matlab.lang.OnOffSwitchState.on;
+end
 %Output
 m5 = uimenu(fig,'Label','3. Output'); 
 m5a = uimenu(m5,'Label','Analysis Post-Processor',...
@@ -261,7 +276,7 @@ m6c = uimenu(m6,'Label','CUTWP (Global Buckling Only)',...
 %                'commandbar_cb(34);']);
 
 %---------------------------------------------------------------------
-%Experiment with adding toolbar across the top like a traditional program
+%Toolbar across the top, like a traditional program
 %---------------------------------------------------------------------
  t = uitoolbar(fig);
 % 
@@ -354,6 +369,20 @@ p5a = uipushtool(t,'TooltipString','Elastic Buckling',...
                 [img,map] = imread('ebanalysis.png','BackgroundColor',[0.94 0.94 0.94]);
                 icon=img;
                 p5a.CData = icon;
+p5IfVec = uitoggletool(t,'Tooltip','Normal',...
+                'Separator','off',...
+                'ClickedCallback',[...
+                'commandbar_cb(1101);']);
+load('VectorizeIcons.mat','-mat','VectorizeIcons');
+if value_ifVec
+	set(p5IfVec,'State','on');
+	set(p5IfVec,'Tooltip','Vectorized');
+	p5IfVec.CData=VectorizeIcons.On;
+else
+	set(p5IfVec,'State','off');
+	set(p5IfVec,'Tooltip','Normal');
+	p5IfVec.CData=VectorizeIcons.Off;
+end
 % %Output
 spacer = uipushtool(t);
                 [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
