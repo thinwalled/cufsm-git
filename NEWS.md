@@ -1,5 +1,13 @@
 # News
 
+## Version 5.20 - 01/24/2024
+
+- Several big fixes to plastic surface builder.
+- Further improved Sheng Jin's 3D plotting code and made default.
+- Added optional vectorized analysis for improved performance on large problems.
+- Added examples and batchcufsm5 code, for non-GUI based use of CUFSM.
+- Miscellaneous Github best practice cleanups with files.
+
 ## Version 5.06 - 01/02/2024
 
 - Moved management to GitHub for the code.
