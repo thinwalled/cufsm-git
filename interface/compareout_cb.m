@@ -18,7 +18,7 @@ global ed_m ed_neigs solutiontype togglesignature togglegensolution popup_BC tog
 %output from cFSM
 global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_local ed_other NatBasis ModalBasis toggleCouple popup_load axesoutofplane axesinplane axes3d lengthindex modeindex spaceindex longitermindex b_v_view modename spacename check_3D cutface_edit len_cur mode_cur space_cur longterm_cur modes SurfPos scale twod threed undef scale_tex
 %output from compareout
-global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed undef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
+global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed ctrlCompUndef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
 %by Sheng Jin
 global toggle_3D popup_3dItem popup_3dData popup_3dStyle
 %
@@ -35,7 +35,7 @@ val = get(popup_plot,'Value');
 if val == 1
     %in-plane
 	scale=str2num(get(scale_tex,'String'));
-	undefv=get(undef,'Value');
+	undefv=get(ctrlCompUndef,'Value');
     SurfPos=str2num(get(cutsurf_tex,'String'));
     mode=shapes{lengthindex}(:,modeindex);
     if ifcheck3d==1
@@ -512,7 +512,7 @@ set(subfig,'position',[100 100 500 300])%
 set(subfig,'units','normalized')
 axescapture=axes('Units','normalized','Position',[0.01 0.09 0.97 0.85],'visible','off');
 scale=str2num(get(scale_tex,'String'));
-undefv=get(undef,'Value');
+undefv=get(ctrlCompUndef,'Value');
 SurfPos=str2num(get(cutsurf_tex,'String'));
 mode=shapes{lengthindex}(:,modeindex);
 
