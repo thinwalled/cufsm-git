@@ -746,6 +746,8 @@ btn_cfsmhelp=uicontrol(fig,...
     'Callback',[...
     'cufsmhelp(22);']);
 
+%%Plot initial shapes and render into axes
+%-----------------------------------------
 %Plot the mode shape as a start
 mode=shapes{lengthindex}(:,modeindex);
 undefv=get(ctrlCompUndef,'Value');
@@ -790,4 +792,5 @@ else
     set(hlegend,'Location','best');
     hold off    
 end
+
 end
