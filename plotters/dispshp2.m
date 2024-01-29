@@ -290,7 +290,7 @@ if Style3D==3%curved lines
 		end
 	end
 	settings3dPloting(false);
-	view(0,0)
+%	view(0,0)
 	return
 end
 
