@@ -20,7 +20,7 @@ global toggleglobal toggledist togglelocal toggleother ed_global ed_dist ed_loca
 %output from compareout
 global pathname filename pathnamecell filenamecell propcell nodecell elemcell lengthscell curvecell clascell shapescell springscell constraintscell GBTconcell solutiontypecell BCcell m_allcell filedisplay files fileindex modes modeindex mmodes mmodeindex lengthindex axescurve togglelfvsmode togglelfvslength curveoption ifcheck3d minopt logopt threed ctrlCompUndef axes2dshapelarge togglemin togglelog modestoplot_tex filetoplot_tex modestoplot_title filetoplot_title checkpatch len_plot lf_plot mode_plot SurfPos cutsurf_tex filename_plot len_cur scale_tex mode_cur mmode_cur file_cur xmin_tex xmax_tex ymin_tex ymax_tex filetoplot_tex screen popup_plot filename_title2 clasopt popup_classify times_classified toggleclassify classification_results plength_cur pfile_cur togglepfiles toggleplength mlengthindex mfileindex axespart_title axes2dshape axes3dshape axesparticipation axescurvemode  modedisplay modestoplot_tex
 %by Sheng Jin
-global toggle_3D popup_3dItem popup_3dData popup_3dStyle
+global toggle_3D popup_3dItem popup_3dData popup_3dStyle edit_3dScale
 %
 switch num
 
@@ -86,9 +86,10 @@ if ifcheck3d==1
 	Item3D=get(popup_3dItem,'Value');
 	Data3D=get(popup_3dData,'Value');
 	ifSurface=get(popup_3dStyle,'Value');
+	scale_3D=str2double(get(edit_3dScale,'String'));
 	ifColorBar=1;%draw color bar
-    dispshp2(lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifSurface,ifColorBar);
-%    dispshp2(undefv,lengths(lengthindex),node,elem,mode,axes3dshape,scale,m_all{lengthindex},BC,ifpatch);
+    SurfPos=str2num(get(cutsurf_tex,'String'));
+    dispshp2(lengths(lengthindex),node,elem,mode,axes3dshape,scale_3D,m_all{lengthindex},BC,0,Item3D,Data3D,ifSurface,ifColorBar,SurfPos);
 %     dispshap3dwaxial(undefv,lengths(lengthindex),node,elem,mode,axesshape,scale);	
 else
     axes(axes3dshape);
@@ -103,10 +104,12 @@ if ifcheck3d==0
 	set(popup_3dItem,'Enable','off');
 	set(popup_3dData,'Enable','off');
 	set(popup_3dStyle,'Enable','off');
+	set(edit_3dScale,'Enable','off');
 else 
 	set(popup_3dItem,'Enable','on');
 	set(popup_3dData,'Enable','on');
 	set(popup_3dStyle,'Enable','on');
+	set(edit_3dScale,'Enable','on');
 end
 %plot the shape
 compareout_cb(1);
@@ -548,9 +551,10 @@ if ifcheck3d
 	mode=shapes{lengthindex}(:,modeindex);
 	Item3D=get(popup_3dItem,'Value');
 	Data3D=get(popup_3dData,'Value');
+	scale_3D=str2double(get(edit_3dScale,'String'));
 	ifSurface=get(popup_3dStyle,'Value');
 	ifColorBar=1;%draw color bar
-    dispshp2(lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,0,Item3D,Data3D,ifSurface,ifColorBar);
+    dispshp2(lengths(lengthindex),node,elem,mode,axescapture3d,scale_3D,m_all{lengthindex},BC,0,Item3D,Data3D,ifSurface,ifColorBar,SurfPos);
 	%dispshp2(undefv,lengths(lengthindex),node,elem,mode,axescapture3d,scale,m_all{lengthindex},BC,ifpatch);
     label_title=uicontrol(subfig3d,...
         'Style','text','units','normalized',...
@@ -863,10 +867,15 @@ label_title=uicontrol(subfig,...
 	'String',label);
 %------------------------------------------------------------------------------------------
 
-    case 41 %3D item toggle
-		compareout_cb(1)
-    case 42 %3D data toggle
-		compareout_cb(1)
+case 41 %3D style toggle
+	if get(popup_3dStyle,'Value')==3 %curved lines style
+		set(popup_3dData,'Enable','off');
+	else
+		set(popup_3dData,'Enable','on');
+	end
+	compareout_cb(1)
+case 42 %3D data toggle
+	compareout_cb(1)
 end
 
 

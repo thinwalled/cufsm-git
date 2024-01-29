@@ -1,4 +1,4 @@
-function []=dispshp2(L,node,elem,mode,axesnum,scalem,m_a,BC,ifpatch,Item3D,color4what_3D,ifSurface,ifColorBar)
+function []=dispshp2(L,node,elem,mode,axesnum,scalem,m_a,BC,ifpatch,Item3D,color4what_3D,Style3D,ifColorBar,y2L_specificSec)
 %BWS
 %1998 originated
 %2010 BWS and Z.Li improvements for speed and generality
@@ -12,8 +12,14 @@ function []=dispshp2(L,node,elem,mode,axesnum,scalem,m_a,BC,ifpatch,Item3D,color
 	%1: Vector sum of Displacement, 2: X-Component of displacement, 3: Y-Component of displacement, 4: Z-Component of displacement
 	%5: Y-Component of Normal Strain, 6: In-strip-plane of Shear Strain
 	%7: No Color
-%ifSurface: surface(1) or mesh(2)
+%Style3D: 1: surface, 2: mesh, 3: curved lines(nodal lines and specific crose-section lines)
 %ifColorBar: display a vertical colorbar or not
+%y2L_specificSec: location of the cross-section drawn in the "curved lines" style figure 
+
+%determine if there are user input for y2L_specificSec
+if nargin<14
+	y2L_specificSec=0.5;
+end
 
 %To determine the ergodic path(s) of the cross-section, "Euler path"
 listNd=node(:,1);%list of the nodes
@@ -144,8 +150,8 @@ for i=1:nStrip
 end
 
 %to calculate the values of the longitudinal functions at positions the cross-sections
-%number of cross-section£ºkm
-%total segments along the length£º(km-1)
+%number of cross-section: km
+%total segments along the length: (km-1)
 y2L=linspace(0,1,km);%y/L
 
 if strcmp(BC,'S-S')
@@ -168,7 +174,9 @@ else
 end
 
 %Determine a scaling factor for the displaced shape
-scale=scalem*1/3*max(max(node(:,2:3)));
+dispmax=(max(abs(mode(:,:))));
+membersize=max(max(node(:,2:3)))-min(min(node(:,2:3)));
+scale=scalem*1/10*membersize/dispmax;
 
 watchon;
 %
@@ -181,6 +189,110 @@ hold on
 colormap(axesnum,jet(256));
 nPath=length(PathNodes);
 
+%Format of the data for graphic object:
+%Mode shapes can be expressed using curved lines or curved surfaces.
+%A mode shape figure might consist of sever parts (several surfaces or several lines) or only one (e.g. one surface object) 
+%One sort of data (e.g. X-direction displacement U***) is stored in a one-dimensional cell array
+%	each cell in this array for one part of the figure.
+%Each cell is a two-dimensional matrix, of this 2-dimensional matrix,
+%	row number = cross-section number (i.e. number of longitudinal segmented sections),
+%	column number = nodes in each cross-sectin of this part.
+%So, if a part is a nodal line, the column number should be 1,
+%if a part is a cross-section line, the row number should be 1,
+%if a part is a strip, the row number is km, the column number is (transSeg+1)
+%if a part contains all the strips, the row number is km, the column number is (nStrip*transSeg+1)
+
+
+%if Style3D is 3 (using nodal lines and cross-section lines to express the mode shape)
+%in this case,colors will be set in accordance with 2D plotting, thus color4what_3D value will be ignore.
+if Style3D==3%curved lines
+	NodalLinesX=cell(nNd,1);
+	NodalLinesY=cell(nNd,1);
+	NodalLinesZ=cell(nNd,1);
+	NodalLineU=cell(nNd,1);
+	NodalLineV=cell(nNd,1);
+	NodalLineW=cell(nNd,1);
+	for iNd=1:nNd
+		NodalLinesX{iNd}=node(iNd,2)*ones(km,1);
+		NodalLinesY{iNd}=linspace(0,L,km)';
+		NodalLinesZ{iNd}=node(iNd,3)*ones(km,1);
+		NodalLineU{iNd}=funcUWR'*modeU(iNd,:)';
+		NodalLineV{iNd}=funcV'*modeV(iNd,:)';
+		NodalLineW{iNd}=funcUWR'*modeW(iNd,:)';
+	end
+
+	%undeformed nodal lines
+	if Item3D==2||Item3D==3
+		for iNd=1:nNd
+			plot3(NodalLinesX{iNd},NodalLinesY{iNd},NodalLinesZ{iNd},'Color','black','LineWidth',.5,'LineStyle',':');
+		end
+	end
+	
+	%deformed nodal lines
+	if Item3D==1||Item3D==3
+		for iNd=1:nNd
+			plot3(NodalLineU{iNd}.*scale+NodalLinesX{iNd},NodalLineV{iNd}.*scale+NodalLinesY{iNd},NodalLineW{iNd}.*scale+NodalLinesZ{iNd},'Color','blue','LineWidth',.5);
+		end
+	end
+	
+	%will calculate the data of specific cross-section, as well as both end cross-sections.
+	y2L_secs=[0 y2L_specificSec 1];
+	if strcmp(BC,'S-S')
+		secUWR=sin(pi.*m_a'*y2L_secs);
+		secV=cos(pi.*m_a'*y2L_secs);
+	elseif strcmp(BC,'C-C')
+		secUWR=sin(pi.*m_a'*y2L_secs).*sin(pi.*y2L_secs);
+		secV=cos(pi.*m_a'*y2L_secs).*sin(pi.*y2L_secs)+sin(pi.*m_a'*y2L_secs).*cos(pi.*y2L_secs)./m_a';
+	elseif strcmp(BC,'S-C')||strcmp(BC,'C-S')
+		secUWR=sin(pi.*(m_a'+1)*y2L_secs)+(m_a'+1)./m_a'.*sin(pi.*m_a'*y2L_secs);
+		secV=(m_a'+1)./m_a'.*(cos(pi.*(m_a'+1)*y2L_secs)+cos(pi.*m_a'*y2L_secs));
+	elseif strcmp(BC,'F-C')||strcmp(BC,'C-F')
+		secUWR=1-cos(pi.*(m_a'-0.5)*y2L_secs);
+		secV=(m_a'-0.5)./m_a'.*sin(pi.*(m_a'-0.5)*y2L_secs);
+	elseif strcmp(BC,'G-C')||strcmp(BC,'C-G')
+		secUWR=sin(pi.*(m_a'-0.5)*y2L_secs).*sin(pi/2.*y2L_secs);
+		secV=(m_a'-.5)./m_a'.*cos(pi.*(m_a'-.5)*y2L_secs).*sin(pi/2.*y2L_secs)+sin(pi.*(m_a'-.5)*y2L_secs).*cos(pi/2.*y2L_secs)./m_a'./2;
+	else
+		fprintf('\nError: Unrecognized boundary conditions.');
+	end
+
+	sVec=linspace(0,1,transSeg+1)';
+	UStripSec=cell(nStrip,1);
+	VStripSec=cell(nStrip,1);
+	WStripSec=cell(nStrip,1);
+	XStripSec=cell(nStrip,1);
+	YStripSec=cell(nStrip,1);
+	ZStripSec=cell(nStrip,1);
+	for iStrip=1:nStrip
+		UStripSec{iStrip}=secUWR'*[modeU(nd1(iStrip),:)',SubNodeUW(1:2:end,:,iStrip)',modeU(nd2(iStrip),:)'];
+		WStripSec{iStrip}=secUWR'*[modeW(nd1(iStrip),:)',SubNodeUW(2:2:end,:,iStrip)',modeW(nd2(iStrip),:)'];
+		VStripSec{iStrip}=secV'*[modeV(nd1(iStrip),:)',modeV(nd2(iStrip),:)']*[1-sVec';sVec'];
+		XStripSec{iStrip}=repmat([X1(iStrip),X2(iStrip)]*[1-sVec';sVec'],3,1);
+		YStripSec{iStrip}=y2L_secs'*L*ones(1,transSeg+1);
+		ZStripSec{iStrip}=repmat([Z1(iStrip),Z2(iStrip)]*[1-sVec';sVec'],3,1);
+	end
+	for iStrip=1:nStrip
+		if Item3D==2||Item3D==3
+			%undeformed cross-section lines at both ends
+			plot3(XStripSec{iStrip}(1,:),YStripSec{iStrip}(1,:),ZStripSec{iStrip}(1,:),'Color','black','LineStyle',':','LineWidth',.05);
+			plot3(XStripSec{iStrip}(end,:),YStripSec{iStrip}(end,:),ZStripSec{iStrip}(end,:),'Color','black','LineStyle',':','LineWidth',.05);
+			%undeformed cross-section lines at the specific location
+			plot3(XStripSec{iStrip}(2,:),YStripSec{iStrip}(2,:),ZStripSec{iStrip}(2,:),'Color','black','LineWidth',2);
+			plot3(XStripSec{iStrip}(2,:),YStripSec{iStrip}(2,:),ZStripSec{iStrip}(2,:),'Color','yellow','LineWidth',1);
+		end
+		if Item3D==1||Item3D==3
+			%deformed cross-section lines at both ends
+			plot3(UStripSec{iStrip}(1,:)*scale+XStripSec{iStrip}(1,:),VStripSec{iStrip}(1,:)*scale+YStripSec{iStrip}(1,:),WStripSec{iStrip}(1,:)*scale+ZStripSec{iStrip}(1,:),'Color','black','LineStyle',':','LineWidth',.05);
+			plot3(UStripSec{iStrip}(end,:)*scale+XStripSec{iStrip}(end,:),VStripSec{iStrip}(end,:)*scale+YStripSec{iStrip}(end,:),WStripSec{iStrip}(end,:)*scale+ZStripSec{iStrip}(end,:),'Color','black','LineStyle',':','LineWidth',.05);
+			%deformed cross-section lines at the specific location
+			plot3(UStripSec{iStrip}(2,:)*scale+XStripSec{iStrip}(2,:),VStripSec{iStrip}(2,:)*scale+YStripSec{iStrip}(2,:),WStripSec{iStrip}(2,:)*scale+ZStripSec{iStrip}(2,:),'Color','black','LineWidth',2);
+			plot3(UStripSec{iStrip}(2,:)*scale+XStripSec{iStrip}(2,:),VStripSec{iStrip}(2,:)*scale+YStripSec{iStrip}(2,:),WStripSec{iStrip}(2,:)*scale+ZStripSec{iStrip}(2,:),'Color','red','LineWidth',1);
+		end
+	end
+	settings3dPloting(false);
+%	view(0,0)
+	return
+end
 
 if Item3D==3
     % plot the undeformed mesh
@@ -209,7 +321,7 @@ if color4what_3D==6 %for the in-strip-plan shear strain (the shear strain value 
 		fprintf('\nError: Unrecognized boundary conditions.');
 	end
 	%calculate the shear strains strip by strip
-	shearStrainStripMesh=zeros(km,transSeg+1,nStrip);
+	shearStrainStripMesh=cell(nStrip,1);
 	sVec=linspace(0,1,transSeg+1)';
 	V1=modeV(nd1,:);%the V value of the 1st node of each strip
 	V2=modeV(nd2,:);% that for the 2nd node of each strip
@@ -220,39 +332,41 @@ if color4what_3D==6 %for the in-strip-plan shear strain (the shear strain value 
 	u1=[diag(cosStrip),diag(sinStrip)]*[U1;W1];
 	u2=[diag(cosStrip),diag(sinStrip)]*[U2;W2];
 	dV2ds_All=(V2-V1)./bStrip;%the rotations of the cross-sections of the strips in their strip-plane
-	xStripMesh=zeros(km,transSeg+1,nStrip);
-	zStripMesh=zeros(km,transSeg+1,nStrip);
-	yStripMesh=zeros(km,transSeg+1,nStrip);
-	VStripMesh=zeros(km,transSeg+1,nStrip);
-	UStripMesh=zeros(km,transSeg+1,nStrip);
-	WStripMesh=zeros(km,transSeg+1,nStrip);
+	xStripMesh=cell(nStrip,1);
+	zStripMesh=cell(nStrip,1);
+	yStripMesh=cell(nStrip,1);
+	VStripMesh=cell(nStrip,1);
+	UStripMesh=cell(nStrip,1);
+	WStripMesh=cell(nStrip,1);
 	for iStrip=1:nStrip
 		dV2ds_curStrip=repmat(dV2ds_All(iStrip,:),(transSeg+1),1);
 		uMesh_curStrip=[1-sVec,sVec]*[u1(iStrip,:);u2(iStrip,:)];
-		shearStrainStripMesh(:,:,iStrip)=funcV'*dV2ds_curStrip'+d_funcUWR'*uMesh_curStrip';
-		xStripMesh(:,:,iStrip)=repmat([X1(iStrip),X2(iStrip)]*[1-sVec';sVec'],km,1);
-		zStripMesh(:,:,iStrip)=repmat([Z1(iStrip),Z2(iStrip)]*[1-sVec';sVec'],km,1);
-		yStripMesh(:,:,iStrip)=repmat(linspace(0,L,km)',1,transSeg+1);
-		VStripMesh(:,:,iStrip)=funcV'*[V1(iStrip,:);V2(iStrip,:)]'*[1-sVec,sVec]';
-		UStripMesh(:,:,iStrip)=funcUWR'*[modeU(nd1(iStrip),:)',SubNodeUW(1:2:end,:,iStrip)',modeU(nd2(iStrip),:)'];
-		WStripMesh(:,:,iStrip)=funcUWR'*[modeW(nd1(iStrip),:)',SubNodeUW(2:2:end,:,iStrip)',modeW(nd2(iStrip),:)'];
+		shearStrainStripMesh{iStrip}=funcV'*dV2ds_curStrip'+d_funcUWR'*uMesh_curStrip';
+		xStripMesh{iStrip}=repmat([X1(iStrip),X2(iStrip)]*[1-sVec';sVec'],km,1);%it is km-row (transSeg+1)-colum
+		zStripMesh{iStrip}=repmat([Z1(iStrip),Z2(iStrip)]*[1-sVec';sVec'],km,1);
+		yStripMesh{iStrip}=repmat(linspace(0,L,km)',1,transSeg+1);
+		VStripMesh{iStrip}=funcV'*[V1(iStrip,:);V2(iStrip,:)]'*[1-sVec,sVec]';
+		UStripMesh{iStrip}=funcUWR'*[modeU(nd1(iStrip),:)',SubNodeUW(1:2:end,:,iStrip)',modeU(nd2(iStrip),:)'];
+		WStripMesh{iStrip}=funcUWR'*[modeW(nd1(iStrip),:)',SubNodeUW(2:2:end,:,iStrip)',modeW(nd2(iStrip),:)'];
 	end
 
 	
-	if ifSurface==1
+	if Style3D==1
 		if Item3D==1 || Item3D==3
             %in this case, the deformed surface(s) will be plotted. Signature meshes will be plotted in the deformed surface(s), Signature meshes are kind of sparse.
 			isMajorSec=false(km,1);
 			isMajorSec(1:longiSeg:end)=true;% one cross-section each quarter-wave for the sparse meshes 
 			xStrMesh_Skeleton=xStripMesh;
-			xStrMesh_Skeleton(~isMajorSec,2:transSeg,:)=nan;
 			for iStrip=1:nStrip
-				mesh(UStripMesh(:,:,iStrip).*scale+xStrMesh_Skeleton(:,:,iStrip),VStripMesh(:,:,iStrip).*scale+yStripMesh(:,:,iStrip),WStripMesh(:,:,iStrip).*scale+zStripMesh(:,:,iStrip),zeros(km,transSeg+1),'EdgeColor',[.6 .6 .6],'LineStyle',':','FaceColor','none');
-				surf(UStripMesh(:,:,iStrip).*scale+xStripMesh(:,:,iStrip),VStripMesh(:,:,iStrip).*scale+yStripMesh(:,:,iStrip),WStripMesh(:,:,iStrip).*scale+zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
+				xStrMesh_Skeleton{iStrip}(~isMajorSec,2:transSeg)=nan;
+			end
+			for iStrip=1:nStrip
+				mesh(UStripMesh{iStrip}.*scale+xStrMesh_Skeleton{iStrip},VStripMesh{iStrip}.*scale+yStripMesh{iStrip},WStripMesh{iStrip}.*scale+zStripMesh{iStrip},zeros(km,transSeg+1),'EdgeColor',[.6 .6 .6],'LineStyle',':','FaceColor','none');
+				surf(UStripMesh{iStrip}.*scale+xStripMesh{iStrip},VStripMesh{iStrip}.*scale+yStripMesh{iStrip},WStripMesh{iStrip}.*scale+zStripMesh{iStrip},shearStrainStripMesh{iStrip},'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
 			end
 		else %Undeformed shape only
 			for iStrip=1:nStrip
-				surf(xStripMesh(:,:,iStrip),yStripMesh(:,:,iStrip),zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
+				surf(xStripMesh{iStrip},yStripMesh{iStrip},zStripMesh{iStrip},shearStrainStripMesh{iStrip},'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
 			end
 		end
     else
@@ -261,9 +375,9 @@ if color4what_3D==6 %for the in-strip-plan shear strain (the shear strain value 
 		xStrMesh_Skeleton=xStripMesh;
 		for iStrip=1:nStrip
 			if Item3D==1 || Item3D==3
-				mesh(UStripMesh(:,:,iStrip).*scale+xStrMesh_Skeleton(:,:,iStrip),VStripMesh(:,:,iStrip).*scale+yStripMesh(:,:,iStrip),WStripMesh(:,:,iStrip).*scale+zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+				mesh(UStripMesh{iStrip}.*scale+xStrMesh_Skeleton{iStrip},VStripMesh{iStrip}.*scale+yStripMesh{iStrip},WStripMesh{iStrip}.*scale+zStripMesh{iStrip},shearStrainStripMesh{iStrip},'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
 			else
-				mesh(xStrMesh_Skeleton(:,:,iStrip),yStripMesh(:,:,iStrip),zStripMesh(:,:,iStrip),shearStrainStripMesh(:,:,iStrip),'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
+				mesh(xStrMesh_Skeleton{iStrip},yStripMesh{iStrip},zStripMesh{iStrip},shearStrainStripMesh{iStrip},'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
 			end
 		end
 	end
@@ -349,7 +463,7 @@ XMeshSkeleton=Xmesh;
 for iPath=1:nPath
 	XMeshSkeleton{iPath}(~isMajorSec,~pathVexClas{iPath})=nan;
 end
-if (Item3D==1 || Item3D==3) && ifSurface ==1 % draw the signature mesh for the deformed surface.
+if (Item3D==1 || Item3D==3) && Style3D ==1 % draw the signature mesh for the deformed surface.
 	for iPath=1:nPath
 		mesh(dispUmesh{iPath}.*scale+XMeshSkeleton{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(XMeshSkeleton{iPath})),'EdgeColor',[0.6 0.6 0.6],'LineStyle',':','FaceColor','none');
 	end
@@ -359,13 +473,13 @@ end
 if color4what_3D==7 %no color data
 	for iPath=1:nPath
 		if Item3D==1 || Item3D==3
-			if ifSurface==1
+			if Style3D==1
 				surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','none','FaceColor','w','FaceAlpha',1.0,'FaceLighting','flat');
 			else
 				surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','k','FaceColor','non','FaceAlpha',1.0,'FaceLighting','flat');
 			end
 		else
-			if ifSurface==1
+			if Style3D==1
 				surf(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor','none','FaceColor','w','FaceAlpha',1.0,'FaceLighting','flat');
 				surf(XMeshSkeleton{iPath},Ymesh{iPath},Zmesh{iPath},zeros(size(Xmesh{iPath})),'EdgeColor',[0.6 0.6 0.6],'LineStyle',':','FaceColor','w','FaceAlpha',1.0,'FaceLighting','flat');
 			else
@@ -402,7 +516,7 @@ if color4what_3D==7 %no color data
 	return;
 end
 
-%% So far£¬ color4what_3D can only be 1 2 3 4 5 
+%% So far color4what_3D can only be 1 2 3 4 5 
 if color4what_3D==1
 	colorItem=cell(nPath,1);
 	for iPath=1:nPath
@@ -445,7 +559,7 @@ end
 % For 'Deformed only' or 'Deformd shape + undeformed mesh', the deformed surfs are rendered according to colorItem
 if Item3D==1 || Item3D==3
 	for iPath=1:nPath
-		if ifSurface==1
+		if Style3D==1
 			surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},colorItem{iPath},'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
 		else
 			surf(dispUmesh{iPath}.*scale+Xmesh{iPath},dispVmesh{iPath}.*scale+Ymesh{iPath},dispWmesh{iPath}.*scale+Zmesh{iPath},colorItem{iPath},'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
@@ -455,7 +569,7 @@ if Item3D==1 || Item3D==3
 
 else %For 'Undeformed only',  the undeformed surfs are rendered
 	for iPath=1:nPath
-		if ifSurface==1
+		if Style3D==1
 			surf(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},colorItem{iPath},'EdgeColor','none','FaceColor','interp','FaceAlpha',1.0,'FaceLighting','flat');
 		else
 			mesh(Xmesh{iPath},Ymesh{iPath},Zmesh{iPath},colorItem{iPath},'EdgeColor','interp','FaceColor','none','FaceAlpha',1.0,'FaceLighting','flat');
