@@ -3,3 +3,6 @@ CUFSM matlab files and scripts provided in examples folder.
 Analysis performed on earlier version of CUFSM (circa 2006), some modifications may be needed to run on recent version.
 In particular the change of routine strip.m to stripmain.m is likely to cause issues with scripts, also options
 in the plotting routines have changed, so also likely to cause some issues.
+
+Note 2024 01 31, the cwlip_p_post.m script was updated so it will run with the current versions of cufsm. 
+Only had to change inputs to dispshap.m within the script, this is just a post-processing script, but that is the one to start with now.
