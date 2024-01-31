@@ -1,17 +1,20 @@
 %BWS
 %5 August 2004
 %Post-processing an analysis
+%2024 01 31, updated to work with current CUFSM
 %
 clear all
 close all
 %
-currentlocation=['c:\ben\cufsm\cufsm_working\cufsm3\source'];
-addpath([currentlocation]);
-addpath([currentlocation,'\analysis']);
-addpath([currentlocation,'\analysis\GBTconstraints']);
-addpath([currentlocation,'\helpers']);
-addpath([currentlocation,'\interface']);
-addpath([currentlocation,'\plotters']);
+%2024 assume path is already set by running cufsm5 before this script
+%or you can add this back in same as the start of cufsm5.m
+    % currentlocation=['c:\ben\cufsm\cufsm_working\cufsm3\source'];
+    % addpath([currentlocation]);
+    % addpath([currentlocation,'\analysis']);
+    % addpath([currentlocation,'\analysis\GBTconstraints']);
+    % addpath([currentlocation,'\helpers']);
+    % addpath([currentlocation,'\interface']);
+    % addpath([currentlocation,'\plotters']);
 %
 %minimum inputs
 load Cwlip_P
@@ -50,23 +53,26 @@ modeindex=1;
 undefv=1;
 scale=1;
 springs=0;
+m_a=1; %assume signature curve
+BC='S-S'; %signature curve
+SurfPos=1/2; %y/L input for the plot
 %local
 axesshape=axes('Units','normalized','Position',[0.13 0.13 0.25 0.25],'visible','off');
 scale=1;
 lengthindex=length_index_plotted(1);
-dispshap(undefv,node,elem,shapes(:,lengthindex,modeindex),axesshape,scale,springs);
+dispshap(undefv,node,elem,shapes(:,lengthindex,modeindex),axesshape,scale,springs,m_a,BC,SurfPos);
 title(['Local P_{cr}/P_y=',num2str(curve(lengthindex,2),'%2.2f')])
 %distortional
 axesshape=axes('Units','normalized','Position',[0.44 0.13 0.25 0.25],'visible','off');
 scale=1;
 lengthindex=length_index_plotted(2);
-dispshap(undefv,node,elem,shapes(:,lengthindex,modeindex),axesshape,scale,springs);
+dispshap(undefv,node,elem,shapes(:,lengthindex,modeindex),axesshape,scale,springs,m_a,BC,SurfPos);
 title(['Distortional P_{cr}/P_y=',num2str(curve(lengthindex,2),'%2.2f')])
 %LTB
 axesshape=axes('Units','normalized','Position',[0.69 0.4 0.25 0.25],'visible','off');
 scale=1;
 lengthindex=length_index_plotted(3);
-dispshap(undefv,node,elem,shapes(:,lengthindex,modeindex),axesshape,scale,springs);
+dispshap(undefv,node,elem,shapes(:,lengthindex,modeindex),axesshape,scale,springs,m_a,BC,SurfPos);
 title('Flexural')
 %title(['Lateral-torsional M_{cr}/M_y=',num2str(curve(lengthindex,2),'%2.2f')])
 
