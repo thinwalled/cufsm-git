@@ -30,35 +30,20 @@ global pathname filename pathnamecell filenamecell propcell nodecell elemcell le
 %
 %%Path statements for local computer
 %path statements to functions and interface usful for organization in matlab, not useful in standalone version
-wpath=what;
-currentlocation=wpath.path;
-if ispc & ~isdeployed %pc   %is deployed check added due to compiler not allowing addpath
-    addpath([currentlocation]);
-    addpath([currentlocation,'\analysis']);
-    addpath([currentlocation,'\analysis\cFSM']);
-    addpath([currentlocation,'\analysis\plastic']);
-    addpath([currentlocation,'\analysis\vectorized']);   
-    addpath([currentlocation,'\helpers']);
-    %addpath([currentlocation,'\holehelper']);
-    addpath([currentlocation,'\interface']);
-    addpath([currentlocation,'\plotters']);
-    addpath([currentlocation,'\icons']);
-    addpath([currentlocation,'\cutwp']);
-    %addpath([currentlocation,'\abaqusmaker']);
-    addpath([currentlocation,'\analysis\vectorized']);
-elseif ~isdeployed %mac! or unix
-    addpath([currentlocation]);
-    addpath([currentlocation,'/analysis']);
-    addpath([currentlocation,'/analysis/cFSM']);
-    addpath([currentlocation,'/analysis/plastic']);
-    addpath([currentlocation,'/analysis/vectorized']);
-    %addpath([currentlocation,'/holehelper']);
-    addpath([currentlocation,'/helpers']);
-    addpath([currentlocation,'/interface']);
-    addpath([currentlocation,'/plotters']);
-    addpath([currentlocation,'/icons']);
-    addpath([currentlocation,'/cutwp']);
-    %addpath([currentlocation,'/abaqusmaker']);
+[currentlocation,~,~]=fileparts(mfilename('fullpath'));%the path of this file
+if ~isdeployed  %is deployed check added due to compiler not allowing addpath
+	addpath([currentlocation]);
+	addpath([currentlocation filesep 'analysis']);
+	addpath([currentlocation filesep 'analysis' filesep 'cFSM']);
+	addpath([currentlocation filesep 'analysis' filesep 'plastic']);
+	addpath([currentlocation filesep 'analysis' filesep 'vectorized']);
+	%addpath([currentlocation filesep 'holehelper']);
+	addpath([currentlocation filesep 'helpers']);
+	addpath([currentlocation filesep 'interface']);
+	addpath([currentlocation filesep 'plotters']);
+	addpath([currentlocation filesep 'icons']);
+	addpath([currentlocation filesep 'cutwp']);
+	%addpath([currentlocation filesep 'abaqusmaker']);
 end
 
 %%-----------------------------------------------------------------------------------
