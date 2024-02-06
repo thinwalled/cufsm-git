@@ -1,5 +1,9 @@
 # News
 
+## Version 5.20 - 02/06/2024
+
+- Path statements in cufsm5 made platform independent and more robust
+
 ## Version 5.20 - 01/24/2024
 
 - Several big fixes to plastic surface builder.
