@@ -22,17 +22,6 @@ global pathname filename pathnamecell filenamecell propcell nodecell elemcell le
     %by Sheng Jin from compareout
     global toggle_3D popup_3dItem popup_3dData popup_3dStyle edit_3dScale
 
-%Set up the figure title and menu
-hold off
-clf
-name=['CUFSM v',version,' -- Finite Strip Post-Processor'];
-set(fig,'Name',name);
-%
-%set up the command bar
-screen=5;
-commandbar;
-%
-%------------------------------------------------------------------------------------
 i=filenumber;
 if i==1
     %first time in the routine
@@ -120,15 +109,6 @@ solutiontype=solutiontypecell{fileindex};
 %
 files=(1:1:i-1);
 %------------------------------------------------------------------------------------
-%
-%DEFINE THE AXIS THAT WILL BE USED FOR THE TWO PLOTS
-axes2dshape=axes('Units','normalized','Position',[0.30 0.63 0.3 0.32],'visible','on');
-axes2dshapelarge=axes('Units','normalized','Position',[0.30 0.63 0.6 0.32],'visible','off');
-axes3dshape=axes('Units','normalized','Position',[0.65 0.63 0.3 0.32],'visible','on');
-axescurve=axes('Units','normalized','Position',[0.34 0.07 0.63 0.43],'Box','on','XTickLabel','','YTickLabel','','visible','on');
-%for load factor vs mode number and participation of lonitudinal terms
-axesparticipation=axes('Units','normalized','Position',[0.34 0.37 0.62 0.14],'Box','on','XTickLabel','','YTickLabel','','visible','off');
-axescurvemode=axes('Units','normalized','Position',[0.34 0.07 0.62 0.23],'Box','on','XTickLabel','','YTickLabel','','visible','off');
 
 %Set default initial values
 lengthindex=ceil(length(lengths)/2);
@@ -173,6 +153,18 @@ elseif curveoption==2
     xmax=length(curve{lengthindex}(:,2));
     ymax=min([max(curve{lengthindex}(:,2)),3*median(curve{lengthindex}(:,2))]);
 end
+
+%------------------------------------------------------------------------------------
+%Set up the figure title and menu
+hold off
+clf
+name=['CUFSM v',version,' -- Finite Strip Post-Processor'];
+set(fig,'Name',name);
+%
+%set up the command bar
+screen=5;
+commandbar;
+%
 
 %%GUI CONTROLS FOLLOW
 %-------------------
@@ -758,6 +750,17 @@ btn_cfsmhelp=uicontrol(fig,...
     'String','?',...
     'Callback',[...
     'cufsmhelp(22);']);
+
+%-----------------------------------------
+%DEFINE THE AXIS THAT WILL BE USED FOR THE TWO PLOTS
+axes2dshape=axes('Units','normalized','Position',[0.30 0.63 0.3 0.32],'visible','on');
+axes2dshapelarge=axes('Units','normalized','Position',[0.30 0.63 0.6 0.32],'visible','off');
+axes3dshape=axes('Units','normalized','Position',[0.65 0.63 0.3 0.32],'visible','on');
+axescurve=axes('Units','normalized','Position',[0.34 0.07 0.63 0.43],'Box','on','XTickLabel','','YTickLabel','','visible','on');
+%for load factor vs mode number and participation of lonitudinal terms
+axesparticipation=axes('Units','normalized','Position',[0.34 0.37 0.62 0.14],'Box','on','XTickLabel','','YTickLabel','','visible','off');
+axescurvemode=axes('Units','normalized','Position',[0.34 0.07 0.62 0.23],'Box','on','XTickLabel','','YTickLabel','','visible','off');
+%
 
 %%Plot initial shapes and render into axes
 %-----------------------------------------
