@@ -4,6 +4,7 @@
 
 - Speed enhacements on creating interface
 - Bug fix on color of 2D out-of-plane (warping) mode shape
+- Path statements in cufsm5 made platform independent and more robust
 
 ## Version 5.20 - 01/24/2024
 
