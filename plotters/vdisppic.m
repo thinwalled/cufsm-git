@@ -65,8 +65,6 @@ for i=1:length(elem(:,1))
    %Plot the undeformed geometry with the proper element thickness
    theta = atan2((zj-zi),(xj-xi));
    t=elem(i,4);
-   theta = atan2((zj-zi),(xj-xi));
-   t=elem(i,4);
        xpatch=[
         ([xi xj]+[-1 -1]*sin(theta)*t/2)',
         ([xj xi]+[1 1]*sin(theta)*t/2)'];%,
@@ -81,12 +79,12 @@ for i=1:length(elem(:,1))
    %plot( ([xi xi]+[-1 1]*sin(theta)*t/2),[zi zi]+[1 -1]*cos(theta)*t/2 , 'k')
    %plot( ([xj xj]+[-1 1]*sin(theta)*t/2),[zj zj]+[1 -1]*cos(theta)*t/2 , 'k')
    %Plot the strain distribution
-   if dispnorm(i,2)>=0
+   if (sign(scale)+.5)*dispnorm(find(node(:,1)==nodei),2)>=0
        plot([xi sxi],[zi szi],'r')
    else
        plot([xi sxi],[zi szi],'b')
    end
-   if dispnorm(i,2)>=0
+   if (sign(scale)+.5)*dispnorm(find(node(:,1)==nodej),2)>=0
        plot([xj sxj],[zj szj],'r')
    else
        plot([xj sxj],[zj szj],'b')
@@ -95,7 +93,7 @@ for i=1:length(elem(:,1))
 end
 
 for i=1:length(node(:,1))
-   if dispnorm(i,2)>=0
+   if (sign(scale)+.5)*dispnorm(i,2)>=0
       plot(node(i,2),node(i,3),'r.','markersize',12)
       hold on
    else
