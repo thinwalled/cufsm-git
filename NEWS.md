@@ -1,5 +1,10 @@
 # News
 
+## Version 5.30 - 04/19/2024
+
+- Speed enhacements on creating interface
+- Bug fix on color of 2D out-of-plane (warping) mode shape
+
 ## Version 5.20 - 01/24/2024
 
 - Several big fixes to plastic surface builder.
