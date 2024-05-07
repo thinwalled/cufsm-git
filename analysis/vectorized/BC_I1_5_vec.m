@@ -85,7 +85,7 @@ elseif strcmp(BC,'S-C')||strcmp(BC,'C-S')
 	I5(sub2ind(size(I5),big1,small1))=pi^2/a/2.*(mVec(big1)+1).*(mVec(small1)+1);
 
 	I1(sub2ind(size(I1),small1,big1))=a/2.*(mVec(big1)+1)./mVec(big1);
-	I2(sub2ind(size(I2),small1,big1))=-pi^2/a/2.*(mVec(small1)+1).*(mVec(big1)+1)./mVec(big1);
+	I2(sub2ind(size(I2),small1,big1))=-pi^2/a/2.*(mVec(small1)+1).^2.*(mVec(big1)+1)./mVec(big1);
 	I3(sub2ind(size(I3),small1,big1))=-pi^2/a/2.*(mVec(big1)+1).*mVec(big1);
 	I4(sub2ind(size(I4),small1,big1))=pi^4/a^3/2.*(mVec(small1)+1).^2.*mVec(big1).*(mVec(big1)+1);
 	I5(sub2ind(size(I5),small1,big1))=pi^2/a/2.*(mVec(small1)+1).*(mVec(big1)+1);
