@@ -9,11 +9,11 @@ function []=template()
 %be saved then move on to processing the results).
 %
 %general
-global fig screen prop node elem lengths curve shapes clas springs constraints GBTcon BC m_all neigs version screen
+global fig screen     curve shapes clas   GBTcon BC m_all neigs version screen
 %output from pre2
-global subfig ed_prop ed_node ed_elem ed_lengths axestop screen flags modeflag ed_springs ed_constraints
+global subfig ed_prop ed_node ed_elem ed_lengths axestop screen modeflag ed_springs ed_constraints
 %output from template
-global prop node elem lengths springs constraints h_title h_tex b1_title b1_tex d1_title d1_tex q1_title q1_tex b2_title b2_tex d2_title d2_tex q2_title q2_tex r1_title r1_tex r2_title r2_tex r3_title r3_tex r4_title r4_tex t_title t_tex nh_tex nb1_tex nd1_tex nb2_tex nd2_tex nr1_tex nr2_tex nr3_tex nr4_tex C Z kipin Nmm outer centerline roundc sharpc axestemp subfig sfia
+global h_title h_tex b1_title b1_tex d1_title d1_tex q1_title q1_tex b2_title b2_tex d2_title d2_tex q2_title q2_tex r1_title r1_tex r2_title r2_tex r3_title r3_tex r4_title r4_tex t_title t_tex nh_tex nb1_tex nd1_tex nb2_tex nd2_tex nr1_tex nr2_tex nr3_tex nr4_tex C Z kipin Nmm outer centerline roundc sharpc axestemp subfig sfia
 %output from propout and loading
 global A xcg zcg Ixx Izz Ixz thetap I11 I22 Cw J outfy_tex unsymm restrained Bas_Adv scale_w Xs Ys w scale_tex_w outPedit outMxxedit outMzzedit outM11edit outM22edit outTedit outBedit outL_Tedit outx_Tedit Pcheck Mxxcheck Mzzcheck M11check M22check Tcheck screen axesprop axesstres scale_tex maxstress_tex minstress_tex
 %output from boundary condition (Bound. Cond.)

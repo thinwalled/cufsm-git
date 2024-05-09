@@ -3,11 +3,11 @@ function []=template_cb(num)
 %August 2000
 %template callbacks
 %general
-global fig screen prop node elem lengths curve shapes clas springs constraints GBTcon BC m_all neigs version screen
+global fig screen     curve shapes clas   GBTcon BC m_all neigs version screen
 %output from pre2
-global subfig ed_prop ed_node ed_elem ed_lengths axestop screen flags modeflag ed_springs ed_constraints
+global subfig ed_prop ed_node ed_elem ed_lengths axestop screen modeflag ed_springs ed_constraints
 %output from template
-global prop node elem lengths springs constraints h_title h_tex b1_title b1_tex d1_title d1_tex q1_title q1_tex b2_title b2_tex d2_title d2_tex q2_title q2_tex r1_title r1_tex r2_title r2_tex r3_title r3_tex r4_title r4_tex t_title t_tex nh_tex nb1_tex nd1_tex nb2_tex nd2_tex nr1_tex nr2_tex nr3_tex nr4_tex C Z kipin Nmm outer centerline roundc sharpc axestemp subfig sfia
+global h_title h_tex b1_title b1_tex d1_title d1_tex q1_title q1_tex b2_title b2_tex d2_title d2_tex q2_title q2_tex r1_title r1_tex r2_title r2_tex r3_title r3_tex r4_title r4_tex t_title t_tex nh_tex nb1_tex nd1_tex nb2_tex nd2_tex nr1_tex nr2_tex nr3_tex nr4_tex C Z kipin Nmm outer centerline roundc sharpc axestemp subfig sfia
 %output from propout and loading
 global A xcg zcg Ixx Izz Ixz thetap I11 I22 Cw J outfy_tex unsymm restrained Bas_Adv scale_w Xs Ys w scale_tex_w outPedit outMxxedit outMzzedit outM11edit outM22edit outTedit outBedit outL_Tedit outx_Tedit Pcheck Mxxcheck Mzzcheck M11check M22check Tcheck screen axesprop axesstres scale_tex maxstress_tex minstress_tex
 %output from boundary condition (Bound. Cond.)
@@ -73,7 +73,38 @@ template_cb(1);
 
 case 4
 %-------------------------------------------------------------------
-template_cb(1)
+%get geometry
+h=str2num(get(h_tex,'String'));
+b1=str2num(get(b1_tex,'String'));
+d1=str2num(get(d1_tex,'String'));
+q1=str2num(get(q1_tex,'String'));
+b2=str2num(get(b2_tex,'String'));
+d2=str2num(get(d2_tex,'String'));
+q2=str2num(get(q2_tex,'String'));
+r1=str2num(get(r1_tex,'String'));
+r2=str2num(get(r2_tex,'String'));
+r3=str2num(get(r3_tex,'String'));
+r4=str2num(get(r4_tex,'String'));
+t=str2num(get(t_tex,'String'));
+nh=str2num(get(nh_tex,'String'));
+nb1=str2num(get(nb1_tex,'String'));
+nd1=str2num(get(nd1_tex,'String'));
+nb2=str2num(get(nb2_tex,'String'));
+nd2=str2num(get(nd2_tex,'String'));
+nr1=str2num(get(nr1_tex,'String'));
+nr2=str2num(get(nr2_tex,'String'));
+nr3=str2num(get(nr3_tex,'String'));
+nr4=str2num(get(nr4_tex,'String'));
+Cv=get(C,'Value');
+if Cv==1
+	CorZ=1;
+else
+	CorZ=2;
+end
+kipinv=get(kipin,'Value');
+centerv=get(centerline,'Value');
+[prop,node,elem,lengths,springs,constraints,~,~]=templatecalc(CorZ,h,b1,b2,d1,d2,r1,r2,r3,r4,q1,q2,t,nh,nb1,nb2,nd1,nd2,nr1,nr2,nr3,nr4,kipinv,centerv);
+submitTemplate2Input(prop,node,elem,lengths,springs,constraints);
 close(subfig);
 figure(fig);
 pre2;
@@ -306,4 +337,15 @@ template_cb(1);
         
 
 %-------------------------------------------------------------------
+end
+end
+
+function []=submitTemplate2Input(prop_temp,node_temp,elem_temp,lengths_temp,springs_temp,constraints_temp)
+	global prop node elem lengths springs constraints
+	prop=prop_temp;
+	node=node_temp;
+	elem=elem_temp;
+	lengths=lengths_temp;
+	springs=springs_temp;
+	constraints=constraints_temp;
 end
