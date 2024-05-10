@@ -1,6 +1,6 @@
 %function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,ifVec)
 function [curve,shapes,clas,curveL,shapesL,curveD,shapesD,curveG,shapesG]=stripmain_fcFSM(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,ifVec,cornerStrips)
-%This function is revised based on the current stripmain.m file: adding 5 pieces of codes (all marked) and NO delecting, 
+%This function is revised based on the current stripmain.m file: adding 3 pieces of codes (all marked) and NO delecting, 
 %In order to complete the modal analyses once for all in this testing version, this function returns more outputs than stripmain.m,
 %The number of outputs can be set the same as before, but then we will have to call this functions several times, one for each solution
 %Feb. 8, 2024. Sheng Jin
@@ -151,7 +151,7 @@ clas=cell(nlengths,1);
 %Most of the construction process is based on cross-section geometry,
 %so this part job is conducted here before the loop over lengths
 [C_L,J_D,J_GD]=SecAnal_fcFSM(node,elem,cornerStrips);
-%% ====================
+%% ====================End of fcFSM block #1==============================
 %---------------------------------------------------------------------------------
 %initialize the outputs.
 %calculation interruption could cause format conflictions between the uninitialized outputs to other data 
@@ -403,7 +403,7 @@ while l<nlengths
 	curveG{l}(1:modeNum,1)=lengths(l);
 	curveG{l}(1:modeNum,2)=tempVec_eigenValue(tempIdx_eigenalue);
 	shapesG{l}=C_G*tempMat_eigenMode(:,tempIdx_eigenalue);
-	%% ====================
+	%% ==================== End of fcFSM block #2==============
     %
     %INTRODUDCE CONSTRAINTS AND REDUCE K MATRICES TO FREE PARTS ONLY
     Kff=R'*K*R;
@@ -506,7 +506,7 @@ while l<nlengths
 	D_energyPtn=sum((D_sub./2).*(K*D_sub),1)./Energy_All.*100;
 	G_energyPtn=sum((G_sub./2).*(K*G_sub),1)./Energy_All.*100;
 	clas{l}=[G_energyPtn',D_energyPtn',L_energyPtn',100.-(L_energyPtn'+D_energyPtn'+G_energyPtn')]; %the 4th column is not for "Other" mode class, but just the calculation errors
-	%% ====================
+	%% ====================End of fcFSM block #3================
     %
     %
     %WAITBAR MESSAGE

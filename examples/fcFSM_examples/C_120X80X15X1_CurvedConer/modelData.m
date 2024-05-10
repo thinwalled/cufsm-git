@@ -1,7 +1,8 @@
 function [prop,node,elem,lengths,BC,m_all,springs,constraints,neigs,cornerStrips]=modelData(pathCUFSM)
-%This model is the same to 'C_120X80X15X1' model except that the longitudinal term is 3,
+%This model is the same to model 'C_120X80X15X1' except that the corners are rounded that are simulated using three straight strips each,
 
-%So, we will read in the data from 'C_120X80X15X1' model, then set m to 3.
+%So, we will read in the data from the model 'C_120X80X15X1', then modify the data of node and elem (because we have more nodes and strips now),
+%and finally declare the strips belonging to corners (they will be handled in a different way than others in the fcFSM modal analysis).
 
 inhertModelName='C_120X80X15X1';
 curPath=pwd;
@@ -62,4 +63,4 @@ elem=[1	1	2	1	100
 	24	24	25	1	100
 	25	25	26	1	100];
 
-cornerStrips=[2 3 4 8 9 10 16 17 18 22 23 24];
+cornerStrips=[2 3 4 8 9 10 16 17 18 22 23 24]; %strips belonging to corners

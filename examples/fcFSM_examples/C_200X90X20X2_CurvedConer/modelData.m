@@ -98,4 +98,4 @@ springs=0;
 constraints=0;
 neigs=10;
 
-cornerStrips=[2 3 4 8 9 10 18 19 20 24 25 26];%no curved corner
+cornerStrips=[2 3 4 8 9 10 18 19 20 24 25 26];%strips belonging to corners
