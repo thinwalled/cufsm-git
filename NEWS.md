@@ -1,5 +1,10 @@
 # News
 
+## Version 5.50 - 05/27/2024
+
+- Added force-based constrained finite strip method (fcFSM) examples and capabilities 
+- Bug fixes on interface with cross-section generator crashing main program
+
 ## Version 5.30 - 04/19/2024
 
 - Speed enhacements on creating interface
