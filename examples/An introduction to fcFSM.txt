@@ -1,0 +1,21 @@
+
+A test version of fcFSM is added into CUFSM as a module.
+1. There is no modification to the current files of CUFSM.
+2. Added items: a folder “%CUFSM folder% / analysis / fcFSM” [*] and two files in this folder - “stripmain_fcFSM.m” and “secAnal_fcFSM.m”.
+	To avoid modifications to the current file, “stripmain_fcFSM.m” is used instead of “stripmain.m” in this testing. There is no difference between these two files except for 3 short pieces of codes added in “stripmain_fcFSM.m”.
+	Most part of the construction process of fcFSM constraint matrices is independent to half-wave length/member length, thus was placed in the “secAnal_fcFSM” function.
+	*Note: “%CUFSM folder%” denotes the install directory of CUFSM, i.e. the directory where the file “cufsm5.m” locates.
+3. This test version of fcFSM runs in batch mode. The FSM models of examples are stored in the folder “%CUFSM folder% / examples / fcFSM_examples”, and the launcher “batchcufsm5_fcFSM.m” locates in the folder “%CUFSM folder% / examples”.
+	So, this is the way to test your own example: (1) build the FSM model of your example, the nodes, elements, lengths, and so on, please refer to the illustrating examples; (2) specify the name of your example in “batchcufsm5_fcFSM.m”, then run it.
+4. The post-processing of this testing version is independent to the main GUI of CUFSM, but figures of modal decomposition and identification solutions are provided.
+5. Further, the modal analysis solutions will also be saved as files and stored in the same directory of the FSM model file: the decomposition solutions “L - fcFSM.mat”, “D - fcFSM.mat”, and “G - fcFSM.mat”, and the general solution with identification results: “general – Idt by fcFSM.mat”.
+	These fcFSM solution files can be opened within the main GUI of CUFSM. Especially, in the “Post-Processor” page, open them via “Load another solution” button to examine the fcFSM solutions in detail, e.g. the buckling shapes.
+6. What CUFSM model features are supported in this version of fcFSM?
+(a) End boundary conditions, e.g. S-C, C-G. Supported.
+(b) Springs (all kinds of springs defined in CUFSM). Supported.
+(c) Higher buckling modal analysis. Supported.
+(d) Multiple longitudinal terms. Not supported. Will support this feature in the future versions.
+(e) A longitudinal term not equal to 1 (e.g. m=3). Supported.
+(f) Internal boundary conditions (on the nodes) and user defined constraints (equation constraints). Not supported. There will be a general fcFSM algorithm for arbitrary supporting conditions in the future.
+(g) Quasi-curved cross-sections. Supported
+(h) Curved corners. Supported
