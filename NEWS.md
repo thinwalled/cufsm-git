@@ -1,5 +1,5 @@
 # News
-
+-Adding code for performing vibration analysis using CUFSM
 ## Version 5.50 - 05/27/2024
 
 - Added force-based constrained finite strip method (fcFSM) examples and capabilities 
