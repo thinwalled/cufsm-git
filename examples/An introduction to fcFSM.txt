@@ -1,4 +1,8 @@
 
+20240606
+Now multiple longitudinal terms can be considered.
+
+20240511
 A test version of fcFSM is added into CUFSM as a module.
 1. There is no modification to the current files of CUFSM.
 2. Added items: a folder “%CUFSM folder% / analysis / fcFSM” [*] and two files in this folder - “stripmain_fcFSM.m” and “secAnal_fcFSM.m”.

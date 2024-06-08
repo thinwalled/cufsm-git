@@ -18,9 +18,7 @@ function [C_L,J_D,J_GD]=SecAnal_fcFSM(node,elem,cornerStrips)
 %	if [q] is in equilibrium, fcFSM considers the corresponding deformation as D class deformation.
 
 %Limitations of current version of fcFSM
-%1. Considers only one longitudinal term, although this term can be a value other than 1. 
-%		multiple longitudinal terms will be supported in the future versions.
-%2. User defined equation constraints are not supported, and DOF constraints on nodes are not supported.
+%1. User defined equation constraints are not supported, and DOF constraints on nodes are not supported.
 %		there will be a general fcFSM algorithm for arbitrary supporting conditions.
 
 nNd=size(node,1);%number of nodes
@@ -119,8 +117,8 @@ end
 
 J_GD=zeros(4*nNd,nPlate);
 %The DOFs are arranged as such in CUFSM: [u1 v1...un vn w1 01...wn 0n].
-%So the order numbers of the X- and Z- direction forces of node i in the [P] vector are, respectively, 2i-1 and 2*nNd+2i-1
-%concentrating of [q] leads to no Y- direction nodal force or nodal moment
+%So, the order numbers of the X- and Z- direction forces of node i in the [P] vector are, respectively, 2i-1 and 2*nNd+2i-1
+%Concentrating of [q] leads to no Y- direction nodal force or nodal moment
 for iPlate=1:nPlate
 	for iStrip=1:length(stripsP{iPlate})
 		thisStrip=stripsP{iPlate}(iStrip);
