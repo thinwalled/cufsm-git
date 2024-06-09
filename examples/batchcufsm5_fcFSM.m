@@ -10,8 +10,8 @@
 
 %clear the workspace (optional)
 clear all
-close all
-clc
+%close all
+%clc
 
 %%
 %-----------------------------------------------------------------
@@ -22,7 +22,6 @@ clc
 nameExample='C_120X80X15X1';
 nameExample='C_120X80X15X1_B.C.=S-C';
 nameExample='C_120X80X15X1_Beam';
-nameExample='C_120X80X15X1_m=3';
 nameExample='C_120X80X15X1_CurvedConer';
 nameExample='C_120X80X15X1_SpringsN5N10_K=5';
 nameExample='C_120X80X15X1_SpringsN5N10_K=1e10';
@@ -30,6 +29,7 @@ nameExample='Lipped_Channel_with_Curved_Web';
 nameExample='C_200X90X20X2_CurvedConer';
 nameExample='CircularTube_D100X1';
 nameExample='theDefaultSection';
+nameExample='C_120X80X15X1_m=1to20';
 
 %Please specify the index of the bucklig mode/curve to be plotted (1 for the lowest buckling; 2 and so on for higher buckling modes).
 modeindex=1;

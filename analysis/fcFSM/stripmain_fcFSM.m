@@ -3,10 +3,10 @@ function [curve,shapes,clas,curveL,shapesL,curveD,shapesD,curveG,shapesG]=stripm
 %This function is revised based on the current stripmain.m file: adding 3 pieces of codes (all marked) and NO delecting, 
 %In order to complete the modal analyses once for all in this testing version, this function returns more outputs than stripmain.m,
 %The number of outputs can be set the same as before, but then we will have to call this functions several times, one for each solution
-%Feb. 8, 2024. Sheng Jin
 %cornerStrips: strip elements belong to curved corners.
-%curveL, curveD, curveG: L, D, and G buckling curve (load factor) for each length
+%curveL, curveD, curveG: L, D, and G buckling curves (load factors vs. lengths)
 %shapesL, shapesD, shapesG: L, D, and G mode shapes for each length
+%Feb. 8, 2024; Jun. 7, 2024. Sheng Jin
 
 %HISTORY
 %June 2010, complete update to new Boundary conditions, Z. Li, B. Schafer
@@ -115,7 +115,7 @@ if isempty(neigs)
 	neigs=20;
 end
 
-%% ==additional settings for this fcFSM testing=====
+%% ==additional settings for this fcFSM testing, #1=====
 if nargin<12%There is no curved corner by default
 	cornerStrips=[];
 end
@@ -126,18 +126,6 @@ cFSM_analysis=0;%switch off cFSM. This program tests fcFSM only
 if BCFlag~=0
 	fprintf('\nCurrently user defined constraints and internal (at node) B.C. are ignored in fcFSM.');
 	BCFlag=0;
-end
-%Multiple longitudinal terms will be supported in the future versions.
-%Now we will take only the first term (though value of this term can be any)
-prompted=false;
-for l=1:nlengths
-	if length(m_all{l})>1
-		if ~prompted
-			fprintf('\nCurrently the fcFSM method considers only one longitudinal term.');
-			prompted=true;
-		end
-		m_all{l}=m_all{l}(1);
-	end
 end
 
 curveL=cell(nlengths,1);
@@ -150,7 +138,7 @@ clas=cell(nlengths,1);
 %Going to construct the fcFSM modal constraint matrices,
 %Most of the construction process is based on cross-section geometry,
 %so this part job is conducted here before the loop over lengths
-[C_L,J_D,J_GD]=SecAnal_fcFSM(node,elem,cornerStrips);
+[C_L_oneFunc,J_D_oneFunc,J_GD_oneFunc]=SecAnal_fcFSM(node,elem,cornerStrips);
 %% ====================End of fcFSM block #1==============================
 %---------------------------------------------------------------------------------
 %initialize the outputs.
@@ -360,8 +348,25 @@ while l<nlengths
         end
     end
 	
-	%% ==additional settings for this fcFSM testing=====
-	%the construction of fcFSM D and G constraint matrices needs stiffness matrix, so they will be determined here 
+	%% ==additional settings for this fcFSM testing, #2=====
+	%For multiple longitudinal term problems, the C_L, J_D, J_GD should be multipalized
+	if totalm==1
+		J_GD=J_GD_oneFunc;
+		J_D=J_D_oneFunc;
+		C_L=C_L_oneFunc;
+	else
+		J_GD=zeros(size(J_GD_oneFunc)*totalm);
+		J_D=zeros(size(J_D_oneFunc)*totalm);
+		C_L=zeros(size(C_L_oneFunc)*totalm);
+		for i=1:totalm
+			J_GD(size(J_GD_oneFunc,1)*(i-1)+1:size(J_GD_oneFunc,1)*i,size(J_GD_oneFunc,2)*(i-1)+1:size(J_GD_oneFunc,2)*i)=J_GD_oneFunc;
+			J_D(size(J_D_oneFunc,1)*(i-1)+1:size(J_D_oneFunc,1)*i,size(J_D_oneFunc,2)*(i-1)+1:size(J_D_oneFunc,2)*i)=J_D_oneFunc;
+			C_L(size(C_L_oneFunc,1)*(i-1)+1:size(C_L_oneFunc,1)*i,size(C_L_oneFunc,2)*(i-1)+1:size(C_L_oneFunc,2)*i)=C_L_oneFunc;
+		end
+		C_L=sparse(C_L);
+	end
+	
+	%the construction of fcFSM D and G constraint matrices needs stiffness matrix, so they will be determined here
 	C_D=K\J_GD*J_D;% as explained in SecAnal_fcFSM.m, this is the constraint matrix of D mode class
 	%as explained in SecAnal_fcFSM.m, constraint matrix of G, [C_G], can be obtained as such:
 	J_G=null(C_D'*J_GD);
@@ -369,7 +374,7 @@ while l<nlengths
 
 	%perform L, D, and G modal buckling analyses
 	% L buckling
-	[tempMat_eigenMode,tempMat_eigenValue]=eigs(C_L'*K*C_L,C_L'*Kg*C_L,size(C_L,2),'SM');
+	[tempMat_eigenMode,tempMat_eigenValue]=eigs(C_L'*K*C_L,C_L'*Kg*C_L,min([size(C_L,2),neigs]),'SM');
 	tempVec_eigenValue=diag(tempMat_eigenValue);
 	tempIdx_eigenalue=(tempVec_eigenValue>0);
 	if sum(tempIdx_eigenalue)>neigs
@@ -492,7 +497,7 @@ while l<nlengths
     %shapes(:,l,1:min([nummodes,num_pos_modes]))=modes;
     shapes{l}=mode;
 	
-	%% ==additional settings for this fcFSM testing=====
+	%% ==additional settings for this fcFSM testing, #3=====
     %fcFSM classification
 	modes=shapes{l};
 	dofL=size(C_L,2);
