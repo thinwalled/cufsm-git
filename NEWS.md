@@ -1,8 +1,14 @@
 # News
--Adding code for performing vibration analysis using CUFSM
+
+## Version 5.60 - 06/09/2024
+
+- Added initial free vibration code and first plate example
+- free vibration only works in batch mode at this time, see/examples 
+
 ## Version 5.50 - 05/27/2024
 
-- Added force-based constrained finite strip method (fcFSM) examples and capabilities 
+- Added force-based constrained finite strip method (fcFSM) examples and capabilities
+- fcFSM only works in batch mode at this time, see /examples 
 - Bug fixes on interface with cross-section generator crashing main program
 
 ## Version 5.30 - 04/19/2024
