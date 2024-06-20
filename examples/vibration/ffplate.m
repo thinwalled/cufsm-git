@@ -10,21 +10,11 @@ clc
 
 %Set the path
 %run cufsm5 that will set the path, easier than adding separate code here
-%or, use
-%addpath(genpath('pathtocufsm')) %that gets the main and adds
-%subdirectories where 'pathtocufsm' is your path to where cufsm is
-%installed.
-location=['/Users/rajshri/Documents/GitHub/cufsm-git-vib']; %change this line to your own path
-addpath(location);
-addpath([location,'/abaqusmaker']);
-addpath([location,'/analysis']);
-addpath([location,'/analysis/cFSM']);
-addpath([location,'/analysis/vibration']);
-addpath([location,'/cutwp']);
-addpath([location,'/helpers']);
-addpath([location,'/holehelper']);
-addpath([location,'/interface']);
-addpath([location,'/plotters']);
+%or, use location to main directory and genpath to get subdirectories
+%location=['/Users/rajshri/Documents/GitHub/cufsm-git-vib']; %change this line to your own path
+location=['/Users/bschafer/CEDJHU Dropbox/Ben Schafer/Ben/CUFSM/cufsm_working/cufsm-git/cufsm-git-test/cufsm-git-test/'];
+addpath(genpath(location)) %that gets the main and adds
+
 %basic problem dimensions for a x b x t isotropic steel plate in kip, in.;
 %initial problem based on work with FastFloor Commerical project, see
 %steeli.org for more information
