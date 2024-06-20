@@ -10,10 +10,10 @@ clc
 
 %Set the path
 %run cufsm5 that will set the path, easier than adding separate code here
-%or, use
-%addpath(genpath('pathtocufsm')) %that gets the main and adds
-%subdirectories where 'pathtocufsm' is your path to where cufsm is
-%installed.
+%or, use location to main directory and genpath to get subdirectories
+%location=['/Users/rajshri/Documents/GitHub/cufsm-git-vib']; %change this line to your own path
+location=['/Users/bschafer/CEDJHU Dropbox/Ben Schafer/Ben/CUFSM/cufsm_working/cufsm-git/cufsm-git-test/cufsm-git-test/'];
+addpath(genpath(location)) %that gets the main and adds
 
 %basic problem dimensions for a x b x t isotropic steel plate in kip, in.;
 %initial problem based on work with FastFloor Commerical project, see
@@ -49,17 +49,17 @@ end
 neigs=30;
 
 %call the solver
-[curve,shapes]=stripmain_vib(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs);
+[curve,shapes]=stripmain_vib(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,false);
 
 %save the results
-save ffplate1
+%save ffplate1
 
 %%
 %plot a mode with frequency using the 3D plotter
 lengthindex=1;
-modeindex=2;
+modeindex=1;
 %plotting using CUFSM's 3D plotter
-h1=figure(1)
+h1=figure(1);
 axes3dshape=gca(h1);
 scale_3D=3; %scale
 Item3D=1; %Item3D: objects to be plotted: 1 - Deformed shape only, 2 - Undeformed shape only, 3 - Deformed shape & undeformed mesh

@@ -1,15 +1,15 @@
-function [curve,shapes]=strip_main(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs)
+function [curve,shapes]=stripmain_vib(prop,node,elem,lengths,springs,constraints,GBTcon,BC,m_all,neigs,ifVec)
 %HISTORY
-%2024 05 30 - Rajshri Kumar modified so this woudl work with vibrations
+%2024 06 13 - Rajshri Kumar modified so this would work with vibrations
 %this is the first version, needs to have additional clean ups...
 %June 2010, complete update to new Boundary conditions, Z. Li, B. Schafer
 %
 %INPUTS
-%prop: [matnum Ex Ey vx vy G] 6 x nmats
+%prop: [matnum Ex Ey vx vy G rho] 7 x nmats
 %node: [node# x z dofx dofz dofy dofrot stress] nnodes x 8;
 %elem: [elem# nodei nodej t matnum] nelems x 5;
 %lengths: [L1 L2 L3...] 1 x nlengths; lengths to be analyzed
-%could be half-wavelengths for signiture curve
+%could be half-wavelengths for signature curve
 %or physical lengths for general b.c.
 %springs: [node# d.o.f. kspring kflag] where 1=x dir 2= z dir 3 = y dir 4 = q dir (twist) flag says if k is a foundation stiffness or a total stiffness
 %constraints:: [node#e dofe coeff node#k dofk] e=dof to be eliminated k=kept dof dofe_node = coeff*dofk_nodek
@@ -41,6 +41,7 @@ function [curve,shapes]=strip_main(prop,node,elem,lengths,springs,constraints,GB
 %m_all: m_all{length#}=[longitudinal_num# ... longitudinal_num#],longitudinal terms m for all the lengths in cell notation
 % each cell has a vector including the longitudinal terms for this length
 %neigs - the number of eigenvalues to be determined at length (default=10)
+%ifVec: flag for vectorizing the calculation, false by default (i.e. don't vectorize, use traditional code
 
 %OUTPUTS
 %curve: buckling curve (load factor) for each length
@@ -53,7 +54,7 @@ function [curve,shapes]=strip_main(prop,node,elem,lengths,springs,constraints,GB
 
 %FUNCTIONS CALLED IN THIS ROUTINE
 % \analysis\addspring.m : add springs to K
-% \analysis\assemble.m : asseemble global K, Kg
+% \analysis\assemble.m : assemble global K, Kg
 % \analysis\elemprop.m : element properties
 % \analysis\kglocal.m : element kg matrix
 % \analysis\klocal.m : element k matrix
@@ -128,6 +129,7 @@ while l<nlengths
     %ZERO OUT THE GLOBAL MATRICES
     K=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
     Kg=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
+    M_glob=sparse(zeros(4*nnodes*totalm,4*nnodes*totalm));
     %
     %ASSEMBLE THE GLOBAL STIFFNESS MATRICES
     for i=1:nelems
@@ -141,29 +143,66 @@ while l<nlengths
         vx=prop(row,4);
         vy=prop(row,5);
         G=prop(row,6);
-        [k_l]=klocal(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
-        %Generate geometric stiffness matrix (kg) in local coordinates
-        density = prop(row,7);
-        %calling the function that generates local mass matrix
-        [kg_l]=mlocal(a,b,density,t,BC,m_a);
-        %Transform k and kg into global coordinates
-        alpha=elprop(i,3);
-        [k,kg]=trans(alpha,k_l,kg_l,m_a);
-        %Add element contribution of k to full matrix K and kg to Kg
+        density = prop(row,7);        
+        Ty1=node(elem(i,2),8)*t;
+        Ty2=node(elem(i,3),8)*t;
         nodei=elem(i,2);
         nodej=elem(i,3);
-        [K,Kg]=assemble(K,Kg,k,kg,nodei,nodej,nnodes,m_a);
+        if ~ifVec %traditional assembly
+			[k_l]=klocal(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
+			%Generate geometric stiffness matrix (kg) in local coordinates
+			% [kg_l]=kglocal(a,b,Ty1,Ty2,BC,m_a);
+			%Transform k and kg into global coordinates
+			% alpha=elprop(i,3);
+			% [k,kg]=trans(alpha,k_l,kg_l,m_a);
+			%Add element contribution of k to full matrix K and kg to Kg
+			% [K,Kg]=assemble(K,Kg,k,kg,nodei,nodej,nnodes,m_a);
+            %Generate mass matrix in local coordinates
+            %calling the function that generates local mass matrix(m_loc)
+            [m_loc]=mlocal(a,b,density,t,BC,m_a);
+            %Transform k_l and m_loc into global coordinates(K and m_glob)
+            alpha=elprop(i,3);
+            [k,m_glob]=trans(alpha,k_l,m_loc,m_a);
+            %Add element contribution of k to full matrix K and 
+            %Add element contribution of m_glob to full matrix M_glob
+            [K,M_glob]=assemble(K,M_glob,k,m_glob,nodei,nodej,nnodes,m_a);
+         
+			%WAITBAR MESSAGE for assmebly
+			%if length(m_a)*length(node(:,1))>=120
+			%    info=['Elememt ',num2str(i),' done.'];
+			%    waitbar(i/nelems,wait_message_elem);
+        else %vectorized assembly (faster! but a bit harder to follow)
+			[k_l]=klocal_vec(Ex,Ey,vx,vy,G,t,a,b,BC,m_a);
+			[kg_l]=kglocal_vec(a,b,Ty1,Ty2,BC,m_a);
+			[k,kg]=trans_vec(node(elem(i,2),2),node(elem(i,2),3),node(elem(i,3),2),node(elem(i,3),3),k_l,kg_l,m_a);
+			assembleLoc=reshape(ones(4,2*totalm).*[2*nodei-1;2*nodei;2*nodej-1;2*nodej]+(0:2:4*totalm-2).*nnodes,8*totalm,1);
+			if i==1
+				nnz_k=nnz(k);
+				nnz_kg=nnz(kg);
+				%If a node is shared by two elements, about 1/4 of their nonzero data overlap each other
+				%times nodes shared: 2*nelems-nnodes;
+				%elements not parallel to the x- and z- axes contains more nonzero data, and the overlaps at the intersection nodes is different
+				%so a coefficient of 1.5 is used.
+				K=spalloc(4*nnodes*totalm,4*nnodes*totalm,ceil(nnz_k*(nelems-(2*nelems-nnodes)/4)*1.5));
+				Kg=spalloc(4*nnodes*totalm,4*nnodes*totalm,ceil(nnz_kg*(nelems-(2*nelems-nnodes)/4)*1.5));
+				K(assembleLoc,assembleLoc)=k;
+				Kg(assembleLoc,assembleLoc)=kg;
+			else
+				K(assembleLoc,assembleLoc)=K(assembleLoc,assembleLoc)+k;
+				Kg(assembleLoc,assembleLoc)=Kg(assembleLoc,assembleLoc)+kg;
+			end
+		end
         %WAITBAR MESSAGE for assmebly
         if length(m_a)*length(node(:,1))>=120
             info=['Elememt ',num2str(i),' done.'];
             waitbar(i/nelems,wait_message_elem);
         end
     end
-    if exist('wait_message_elem')==1
-        if ishandle(wait_message_elem)
-            delete(wait_message_elem);
-        end
-    end
+    % if exist('wait_message_elem')==1
+    %     if ishandle(wait_message_elem)
+    %         delete(wait_message_elem);
+    %     end
+    % end
     %ADD SPRING CONTRIBUTIONS TO STIFFNESS 
     %Prior to version 4.3 this was the springs method
         %     if ~isempty(springs) %springs variable exists
@@ -261,14 +300,15 @@ while l<nlengths
     %
     %INTRODUDCE CONSTRAINTS AND REDUCE K MATRICES TO FREE PARTS ONLY
     Kff=R'*K*R;
-    Kgff=R'*Kg*R;
+    % Kgff=R'*Kg*R;
+    M_globff=R'*M_glob*R;
     
     %SOLVE THE EIGENVALUE PROBLEM
     %Determine which solver to use
     %small problems usually use eig, and large problems use eigs.
     %the eigs solver is not as stable as the full eig solver...
     %LAPACK reciprocal condition estimator
-    rcond_num=rcond(full(Kgff\Kff));
+    rcond_num=rcond(full(M_globff\Kff));
     %Here, assume when rcond_num is bigger than half of the eps, eigs can provide
     %reliable solution. Otherwise, eig, the robust solver should be used.
     if rcond_num>=eps/2
@@ -282,16 +322,16 @@ while l<nlengths
         neigs=20;
     end
     if eigflag==1
-        [modes,lf]=eig(full(Kff),full(Kgff));
+        [modes,lf]=eig(full(Kff),full(M_globff));
     else
         options.disp=0;
         options.issym=1;
         N=max(min(2*neigs,length(Kff(1,:))),1);
         if N==1|N==length(Kff(1,:))
-            [modes,lf]=eig(full(Kff),full(Kgff));
+            [modes,lf]=eig(full(Kff),full(M_globff));
         else
         %pull out 10 eigenvalues
-        [modes,lf]=eigs(full(Kgff\Kff),N,'SM',options);
+        [modes,lf]=eigs(full(M_globff\Kff),N,'SM',options);
         end
     end
     %CLEAN UP THE EIGEN SOLUTION
