@@ -920,8 +920,9 @@ end
 %-------------------------------------------------------------------
 case 200
 %-------------------------------------------------------------------
-%code for the about button
-cufsmhelp(200)
+%code for the help button, formerly about button
+%cufsmhelp(200)
+web('cufsmhelp.html','-new','-browser');
 %-------------------------------------------------------------------
 end
 

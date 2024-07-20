@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUFSM Help</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+        h1, h2 { color: #333; }
+        p { margin: 10px 0; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<h1 id="1">CUFSM In-Program Help Documentation</h1>
+<p> The following is a list of all help messages triggered by the help buttons found within CUFSM. This reference is not meant to be a comprehensive set of documentation for CUFSM, but does provide critical basics and information related to the interface intended to be helpful to users. Please see <a href=https://www.ce.jhu.edu/cufsm/>CUFSM home page</a> and <a href=https://github.com/thinwalled/cufsm-git>CUFSM github page</a> for more CUFSM support resources.</p>
+
+
+
+<h1>Main Pre-Processor</h1>
+
+<h2 id="3">Help for material properties</h2>
+<p> Enter an identification number for the material (mat#) followed by the material properties for the member, separate values by spaces. The material properties allow for orthotropic definition of E, v, and G. Simply enter in istoropic values for the needed quantities to ignore this.</p>
+<pre>
+prop=[matnum Ex Ey vx vy G] 6 x nmats
+matnum = reference number for the material, called out in element definition
+Ex = modulus of elasticity in x (transverse)
+Ey = moduluse of elasticity in y (longitudinal)
+vx = Poisson's ratio in x
+vy = Poisson's ration in y
+Gxy = shear modulus
+</pre>
+<p>Example for cold-formed steel</p>
+<pre>
+100 29500 29500 0.3 0.3 29500/(2*(1+0.3)) kips and inches, stress in ksi
+100 203500 203500 0.3 0.3 203500/(2*(1+0.3)) N and mm, stress in MPa </pre>
+
+
+<h2 id="4">Help for node entry</h2>
+<p> Enter the node data, nodal coordinates, boundary conditions and stress, separate values by commas or spaces </p>
+<pre>node=[node# x z dofx dofz dofy dofrot stress] nnodes x 8;
+node# = node number
+x = x coordinate (left-right direction)
+z = z coordinate (up-down direction)
+xdof = degree of freedom in the x direction, 1 or 0,  1=free 0=fixed (generally leave as 1)
+zdof = degree of freedom in the z direction, 1 or 0,
+ydof = degree of freedom in the y (axial) direction, 1 or 0,
+qdof = degree of freedom in the q (q=theta, or twist) direction, 1 or 0,
+stress = stress at the node - use 1.0 if you want to ignore for now, and use the loading button to generate a stress distribution.'
+</pre>
+<p>Example for a simple C-section that is hard-coded in CUFSM. The section is 9 in. deep, has 5 in. flanges, has 2.5 in lips. and has a stress gradient applied about the major-axis.</p>
+<pre>
+  1 5.0000 1.0000 1 1 1 1 -38.889
+  2 5.0000 0.0000 1 1 1 1 -50.000
+  3 2.5000 0.0000 1 1 1 1 -50.000
+  4 0.0000 0.0000 1 1 1 1 -50.000
+  5 0.0000 3.0000 1 1 1 1 -16.667
+  6 0.0000 6.0000 1 1 1 1 16.667 
+  7 0.0000 9.0000 1 1 1 1 50.000 
+  8 2.5000 9.0000 1 1 1 1 50.000 
+  9 5.0000 9.0000 1 1 1 1 50.000 
+  10 5.0000 8.0000 1 1 1 1 38.889
+</pre>
+
+<h2 id="5">Help for element entry</h2>
+<p> Enter the element data, separate values by single spaces end with the mat# which refers back to the properties entered above.</p>
+<pre>
+elem=[elem# nodei nodej t matnum] nelems x 5;
+elem# = element number
+nodei = node number at end i of the element
+nodej = node number at end j of the element
+t = element thickness
+matnum = material number (as defined in properties)
+</pre>
+<p>Example for a simple C-section that is hard-coded in CUFSM, thickness is constant at 0.1 in.</p>
+<pre>
+  1 1 2 0.100000 100 
+  2 2 3 0.100000 100 
+  3 3 4 0.100000 100 
+  4 4 5 0.100000 100 
+  5 5 6 0.100000 100 
+  6 6 7 0.100000 100 
+  7 7 8 0.100000 100 
+  8 8 9 0.100000 100 
+  9 9 10 0.100000 100
+</pre>
+
+<h2 id="16">Help on entering spring data</h2>
+Springs may be added to your model. For instance to model fastening between two sections, or bracing that is not included in the model. The format of the input is
+<pre> 
+spring=[spring# nodei nodej ku kv kw kq local discrete y/L]
+spring# = spring number 
+nodei = node at start of spring
+nodej = node at end of spring, enter 0 if you want the spring to connect to ground
+ku = x or transverse spring stiffness 
+kv = y or longitudinal spring stiffness
+kw = w or out-of-plane spring stiffness
+kq = q or rotational spring stiffness
+local = 1 use the local coordinate system defined such that x direction and ku are from nodei to nodej
+or
+local = 0 use the global coordinate system, so ku,kv,kw,kq are kU, kV, kW, kQ 
+discrete = 1 the spring is a discrete spring, i.e. at a specific longitudinal location, e.g. units of F/L 
+or
+discrete=0 the spring is a foundnaton spring, runs along the long. length, e.g. units of F/L/L
+y/L = the normalized longitudinal location of a discrete spring, otherwise enter 0 for foundation spring
+</pre> 
+<p>Example of a foundation spring to ground</p>
+<pre>1 8 0 0.1 0.2 0.3 0.004 0 0 0</pre> 
+<p>which is spring 1 connects at node 8 to the ground (node 0), the ku stiffness is 0.1, the kv stiffness is 0.2, the kw stiffness is 0.3, the kq stiffnes is 0.004 the global (0) coordinate system is used for the spring, the discrete logical is set to 0 so the springs are foundation springs (i.e. per length) and finally the y/L location is thus irrelevant and set to 0 as well.</p>
+<p>Example of a discrete spring between to parts of a section</p>
+<pre>2 1 10 0.15 0.25 0.35 0.045 1 1 0.5</pre> 
+<p>which is spring 2 connects node 1 to node 10, the ku stiffness is 0.15, the kv stiffness is 0.25, the kw stiffness is 0.35, the kq stiffnes is 0.045 the local coordinate system from 1 to 10 is used to define x (u) for the spring, the discrete logical is set to 1 so the springs are discrete springs (e.g. F/L) and finally the y/L location is set to 0.5, or midspan. NOTE, use of discrete springs requires use of generalized FSM, as if you only use one half-sine wave (m) term as in the signature curve it will not be able to accurately incorporate the spring.</p>
+
+
+<h2 id="19">Help on entering constraint data</h2>
+<p>Equation constraints may be added to your model. Leave this entry blank if you do not want to add any equation constraints to the model. Equation constraints are used to tie different degrees of freedom together. For instance say the vertical deflection at nodes 10 and 20 should be the same. this is achieved by (e)liminating one degree of freedom at one node and writing an equation that is in terms of the (k)ept degrees of freedom.</p>
+<pre>
+constraints=[node#e dofe coeff node#k dofk] - as many rows as constraints, must pad with 0's so all data has same number of columns
+node#e = node to eliminated
+dofe = dof of node e to eliminate
+coeff = coeff on RHS for kept DOF
+node#k = node to be kept (will drive the eliminated DOF)
+dofk = dof of the kept node (drives the expression)
+</pre>
+<p>For the the example of w10 = 1.0*w20, the user should enter </p>
+<pre>10 2 1.0 20 2</pre> 
+<p>which says node 10, degree of freedom 2 should be eliminated and set equal to 1.0 times node 20 degree of freedom 2. More complicated expression with multiple (k)ept degrees of freedom can be completed by adding additional columns. Eliminated degrees of freedom may not be used as kept degrees of freedom in any expression. Common use of this feature is to model an external strap where two portions of the model are forced to move together. Or, to partially restrict behavior to examine a particular mode.</p> 
+<p>MASTER_SLAVE: Use of the master-slave constraints button will allow you to slave any number of nodes to a master node. This allows rigid cross-section modes, and partial rigid cross-section modes to be modeled for example slave all nodes of a flange to the flange/web junction to enforce deformations similar to distortional buckling, or or slave all nodes to one single master node, to examine global torsional and flexural modes.</p> 
+<p>All entries must have the same number of columns, trailing zeros may be added to the end of the entries.</p>
+
+
+
+<h1>C/Z Template</h1>
+<p> This template provides a means to generate C and Z cross-sections, as well as hat sections. SSMA/SFIA shapes are avaialable through a drop down menu. Users may generate straight line models, or models with corners. Once dimensions are set they are submitted back to the CUFSM main pre-processor, and the physical dimensions (h, b, d, etc.) are not stored. The template only generates models, and cannot be returned to for editing.</p>
+
+
+
+<h1>Applied Stress Generator</h1>
+
+<h2 id="7">First Yield Calculator</h2>
+<p>After entering the value of the yield stress, hitting enter or entering another field will generate the individual loads and moments at first yield. For the bending calculation the stresses are calculated about the principal axes, or you may select restrained bending, which will only allows stresses to be calulated assuming pure bending about the geometric x and z axes (this approximation has been common in the past e.g. for Z sections where bracing is assumed to restrain the section from twist and thus bending is assumed only about X and Z). The calculate button also calculates longitudinal stresses developed from Bimoment.</p>
+
+<h2 id="7">Reference Applied Loads - Generate from Stress</h2>
+<p>The "Generate from Stress" button in the Reference Applied Loads section will take the stresses entered in from the main pre-processor (last column of the nodes entry) and integrate the stresses to determine P,M,B and produce the closest fitting values. Note, CUFSM stores stresses at nodes, not P, M, B, etc.</p>
+
+<h2 id="21">Warning for "yield" calculation of loads and moments</h2>
+<p>Calculated loads and moments are based on the nodal coordinate locations, NOT the extreme fiber. This approximation is generally valid for thin-walled members, but the user should exercise care as the thickness increases.</p>
+
+<h2 id="8">Help for stress generation</h2>
+<p>The finite strip analysis is performed by defining the stress at each node. Select the button to the left to submit the stress generated on this page to the analysis pre-processor. The stress distribution may be determined by entering in actions P, B, M etc. that you want to consider as the reference applied loads. Or you may also use the yield loads (or moments) for reference (press the Py button for example), or you can determine the actions that are closest to the current applied stress by using the Generate stress button.</p>
+
+
+
+<h1>Lengths and End Boundary Conditions</h1>
+
+<h2 id="61">Help for solution type</h2>
+<p>This feature allows selection of solution types between the signature curve (traditional solution) and general boundary condition solution. The signature curve is a special case of the general boundary solution when the longitudinal term employed is only m=1 and end boundary conditions are set to be Simply-Simply supported (S-S). The lengths in a signature curve analysis may be understood as "half-wavelengths". Thus, the solution of singature curve is in terms of load factor versus half-wavelength.</p> 
+<p>The "general boundary condition solution" provides a solution as load factor versus physical length, similar to FEM solutions, and typically a set of longitudinal terms (many different m's) should be included for each length. Carefully selecting the longitudinal terms (by recommended m) is advised to save computational time. The longitudinal shape function viewer on the right provides a live view of the terms in the solution that the user is currently using. For boundary conditions other than simply supported, and for discrete springs, general boundary condition solver shoudl be used.</p> 
+
+<h2 id="62">Help for boundary conditions</h2>
+<p>End boundary conditions can be specified as</p>
+<pre>
+simple-simple (S-S)
+clamped-clamped (C-C)
+simple-clamped (S-C)
+clamped-free (C-F)
+clamped-guided (C-G).
+</pre>
+<p>For signature curve analysis, end boundary conditions should always be S-S. (It is possible to generate something analagous to the signtaure curve for other boundary conditions, but S-S is the only solution properly defined as a signature curve for a section).</p>
+
+<h2 id="63">Help for number of eigenvalues</h2>
+<p>Specify the number of eigenvalues of the solution. For a signature curve typically only the first eigenvalue is explored; however similar to FEM, for general boundary condition solutions usually more than 10 eigen solutions are needed to possibly ensure the solution including all the three buckling modes (local, distortional, global) are observed, depending on the longitudinal terms employed in the solution.</p>
+
+<h2 id="64">Help for length and longitudinal terms</h2>
+<p>Enter the lengths and longitudinal terms for each length for the finite strip analysis. The formatting is different for signature curve analysis and for general end boundary conditions. For signature curve analysis you enter the lengths as a column. For general end boundary conditions you enter the length and then add additional rows for the m longitudinal terms to be included.</p>
+<p>For signature curve, finite strip analysis assumes a single half sine wave from end to end (longitudinal term m=1), the length of this half sine wave is known as the half-wavelength. A large number of half-wavelngths are usually analyzed in order to understand the different possible buckling mode shapes. Example:</p>
+<pre>
+1
+2
+3
+..
+10
+12
+14
+..
+100
+120
+140
+</pre>
+<p>You may enter column vectors as well as singular numbers for example [10:10:100]' is the same as entering [10; 20; 30; 40; 50; 60; 70; 80; 90; 100;] as a column; you may also space things evenly in logspace, enter logspace(0,2,50)' puts 50 points between 10^0 and 10^2 (evenly spaced in a semilogx plot in column).</p>
+<p>For general boundary condition solution, the length in finite strip analysis is physical length. For each length, several longitudinal terms should be included to accurately capture the possible buckling behavior. Longitudinal shape function is plotted on the right to help understanding the longitudinal terms. Exmaple:</p>
+<pre>
+96 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+</pre>
+<p>This example is for a 96 in. long column, and m longitudinal terms from 1 to 20 have been included. m=1 is certainly needed for the global terms, m=20 implies that the shortest half-wavelgnth in this problem of interest is 96 in./20 or 4.8 in. If shorter half-wavelengths are of interest, then higher m should be included. The interface provides three additional features, (a) bring over the lengths from the signature curve, (b) set m for all lengths, (c) recommend m based on identified half-wavelngths for local and distortional. In most cases it is recommended to only run a general end boundary condition analysis at one length - as the concept of the signature curve is not applicable.</p>        
+
+<h2 id="72">Help on m recommended half-wavelengths</h2>
+<p>Half-wave lengths of local and distortional buckling are necessary for recommedation of longitudinal terms. A signature curve with unique minima is defined as one that includes two distinct minima, corresponding to local and distortional buckling. In this case, the half-wave lengths of local and distortional buckling are distinct. If either or both minima is 'indistinct' the signature curve is characterized as having only non-unique minima. In this case, need user''s judgement to input the missing half-wave lengths. Or if the cross section of the member is straight-line model, one can turn on the cfsm for helping on the half-wave lengths.</p> 
+
+
+<h1>constrained Finite Strip Method (cFSM)</h1>
+
+<h2 id="20">Help on What is the constrained Finite Strip Method</h2>
+<p>The constrained Finite Strip Method (cFSM) is an extension in CUFSM that enables modal identification and modal decomposition. The core of the cFSM is that all of the deformations in the FSM can be split into classes of deformation: Global (G), Distortional (D), Local (L), and Other (Shear and Transverse extension, i.e. O/ST). In each class the deformations are constrained to only be consistent with that class - so the Global modes exclude cross-section deformation. In this part of CUFSM the user can turn on cFSM and control what deformation modes are allowed in their analysis (by flagging the vectors with 0 or 1). If cfSM is turned on, the in the post-processor it is possible to use modal identification tools and quantitativel determine the participation of G, D, L, O deformations within an observed buckling model. cFSM is similar in may ways to Generalized Beam Theory (GBT), and cFSM's inclusion here allows the user a great deal of power in better understanding buckling deformations.</p> 
+
+<h2 id="70">Help on cFSM Basis Selection</h2>
+<p>cFSM may be performed in at least two bases: natural basis is defined by explicitly following the mechanical criteria similar to those in GBT,  which separates the deformations into the G, D, L, ST/O spaces . The modal basis (similar to GBT) by performing an auxiliary eigen problem within each space either for a unit axial stress, or for the actual applied stresses. For non-simply supported boundary conditions due to the loss of orthogonality of the stiffness matrices between longitudinal terms, whether the constrained eigenvalue problem is solved inside each longitudinal term or over all the longitudinal terms results in the uncoupled and coupled bases, respectively. Finally, ST space is the union of the shear and transverse extensions (generally preferred) and the O space is defined as the null of the GDL subspace, which also has the couple and uncoupled space for non-simply supported boundary conditions. In general, coupled basis is more accurate while uncoupled basis is more computational efficiency (preferred).</p> 
+
+<h2 id="71">Help on cFSM base vectors</h2>
+<p>For the base vectos a 1 implies on and a 0 off (constrained). The modal vector viewer may be used to visualize the mode shapes. The lengths of the base vector in each G,D,L,ST/O space is determined by the cross section of the member. For local and O/ST, base vector lengths are also influenced by the mesh. Whenever the node and element have been changed, the base vectors should be accordingly updated as well. For modal classification the base vectors do not necessarily need to be active (can save a little computational time). One can come back to activate them when performing modal classification.</p>
+
+
+
+<h1>CUFSM Post-Processor</h1>
+
+<h2 id="9">Help for plotting mode shape</h2>
+<p>The shapes to the right are the buckling mode for the member at the length, mode, and file selected. The length should be interpreted as the half-wavelength for signature curve (traditional) analysis and the physical length for general end boundary condition analysis. For 2D plots the deformation is shown at the longitudinal cross section position, i.e., y/L specified (y/L=0.5 is mid-length) - the selected y/L can be changed for convenience. The 3D buckling mode shape is also shown and a variety of options provided for controlling the plot. The scale of the plot may be changed (including negative numbers) for convenience - buckling modes formally have neither sign nor magnitude, only distribution, so the user should change as needed for their visualization purposes. In the 2D plot a box around a node indicates some degree of fixity at this node, a star around a node indicates the presence of a spring at this node.</p>
+
+<h2 id="10">Help for interpreting length</h2>
+<p>For a signature curve (traditional) finite strip analysis assumes a single half sine wave from end to end (longitudinal term m=1), the length of this half sine wave is known as the half-wavelength. A large number of half-wavelngths are usually analyzed in order to understand the different possible buckling mode shapes. For general boundary condition solution, the length in finite strip analysis is the physical length. A large number of modes at a given physical lengths is usually analyzed, similar to shell finite element analysis. Press the arrow to select higher or lower half-wavelgnths, or enter a length, or click on the bucking curve to change the length and reset the plotted mode shape.</p>
+
+<h2 id="11">Help for mode selection</h2>
+<p>For signature curve (traditional) analysis in most situations the first buckling mode is of primary interest, and thus these controls are not needed. However, in some cases, the higher modes that exist at a given half-wavelength are of interest - in this case press the arrows to select the mode of interest and then press Plot Mode to update the plot. An example where higher modes are of interest is when the first mode is restricted in some way that is not included in the analysis. For general boundary condition solution, higher modes are always necessary to find all the three buckling modes (local, distortional, global) and it is common to search by mode, not by length.</p>
+
+<h2 id="17">Help on selecting files for mode shape</h2>
+<p>Press the arrows to select the file that you wish to see the mode shape for. Then press Plot Mode.</p>
+
+<h2 id="13">Help on plotting buckling curve</h2>
+<p>The buckling curve or buckling chart summarizes the results of the analysis. Select the load factor vs. mode number radio button if you want the buckling chart instead of the traditional curve.</p>
+<p>For the buckling curve the horizontal axis is the length at which the analyses are performed - half-wavelength for signature curve and physical length for general end boundary condition solution (thue buckling chart is usually more useful for general end boudary conditions analysis). The vertical axis is the load factor, or the eigenvalue. The load factor is a multiplier times the applied stress distribution that indicates when the buckling occurs. For signature curve, the half-wavelength is the length of the single half sine wave used to perform the analysis. Minimums of this plot are of particular interest.</p>
+<p>For general boundary condition solution, the curve of load factor vs mode number reveals more buckling info. check the load factor vs mode # radio button and then Plot Curve to examine the buckling behavior of a physical length for higher modes and its corresponding longitudinal term participation.</p>
+
+<h2 id="14">Help on mode seleciton</h2>
+<p>Enter the mode number you want to plot on the curve of load factor vs length. For signature curve, in most situations the first buckling mode is of primary interest, and thus these controls are not needed. However, in some cases, the higher modes that exist at a given half-wave length are of interest - in this case press the arrows to select the highest mode of interest, then press Plot Curve. An example where higher modes are of interest is when the first mode is restricted in some way that is not included in the analysis. For general boundary condition solution, higher modes are always necessary to find all the three buckling modes (local, distortional, global).</p>
+
+<h2 id="18">Help on selecting files for buckling curve</h2>
+<p>Enter the number of the files that you want displayed in the buckling curve, separate your entries with spaces. Then press Plot Curve.</p>
+
+<h2 id="22">Help for classification by cFSM</h2>
+<p>This feature allows for determination of modal participationg factors using cFSM, cFSM must be turned on in the pre-processor and the basis selected in the cFSM. The modal participation also depends on the manner in which the cFSM base vectors are normalized (in addition to the selected basis). Work norm, strain energy norm, and a simple vector norm are available.</p>
+
+
+
+<h1>About CUFSM</h1>
+
+<h2 id="200">About CUFSM</h2>
+<p>CUFSM stands for Constrained and Unconstrained Finite Strip Method. CUFSM is authored by Ben Schafer with large contributions from Zhanjie Li, Sandor Adany, and Andrew Sarawit, and smaller contributions from many others. CUFSM is a cross-section analysis tool that provides a means to assess the stability of thin-walled members. CUFSM is available at www.ce.jhu.edu/cufsm. CUFSM wants you to have fun with stability, so get at it.</p>
+
+
+<h1>Extra Tools</h2>
+
+<h2 id="300">Plastic Surface Builder</h2>
+<p>The plastic surface builder provides a means to numerically generate the plastic strength of a general thin-walled cross-section under any combination of longitudinal stress. The original code for the plastic surface builder was developed by Dr. Shahab Torabian. The method assumes elastic perfectly-plastic material behavior in its current incarnation. The method has its greatest use in the context of the generalized beam-column strength prediction.</p>
+
+<h2 id="300">CUTWP</h2>
+<p>CUTWP is a separate module that uses the finite strip cross-section to generate thin-walled cross-secton properties and then solves the global flexural-torsional buckling problem. CUTWP only provides global solutions and uses classical Vlasov thin-walled theory and provides a useful baseline for comparison to general purposed finite strip solutions for global buckling.</p>
+
+<h2 id="500">ABAQUS Maker</h2>
+<p>ABAQUS maker is legacy code created to provide a quick means to generate an 3D shell model in ABAQUS from a 2D CUFSM model. The code was standalone from CUFSM prior to version 5 of CUFSM, and provides a means for researchers to understand how to move from CUFSM to ABAQUS shell models. Modification of the base code is generally required for special situations.</p>
+
+</body>
+</html>
