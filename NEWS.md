@@ -1,5 +1,9 @@
 # News
 
+## Version 5.65 - 07/20/2024
+
+- Help messages refreshed and reworked, all in-program help moved to linked html
+
 ## Version 5.60 - 06/09/2024
 
 - Added initial free vibration code and first plate example

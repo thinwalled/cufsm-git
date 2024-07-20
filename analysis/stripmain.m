@@ -11,7 +11,7 @@ function [curve,shapes]=stripmain(prop,node,elem,lengths,springs,constraints,GBT
 %lengths: [L1 L2 L3...] 1 x nlengths; lengths to be analyzed
 %could be half-wavelengths for signiture curve
 %or physical lengths for general b.c.
-%springs: [node# d.o.f. kspring kflag] where 1=x dir 2= z dir 3 = y dir 4 = q dir (twist) flag says if k is a foundation stiffness or a total stiffness
+%-this is v4 def.n should be updated-->springs: [node# d.o.f. kspring kflag] where 1=x dir 2= z dir 3 = y dir 4 = q dir (twist) flag says if k is a foundation stiffness or a total stiffness
 %constraints:: [node#e dofe coeff node#k dofk] e=dof to be eliminated k=kept dof dofe_node = coeff*dofk_nodek
 %GBTcon: GBTcon.glob,GBTcon.dist, GBTcon.local, GBTcon.other vectors of 1's
 %  and 0's referring to the inclusion (1) or exclusion of a given mode from the analysis,
