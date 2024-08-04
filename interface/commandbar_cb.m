@@ -911,7 +911,14 @@ end
 
 
 %-------------------------------------------------------------------
-
+%-------------------------------------------------
+case 60
+%code for the complex template called from the main menu
+%call pre-processor
+commandbar_cb(8);
+%call template
+pre2_cb(160);
+%-----------------------------------------------
 
 
 

@@ -249,7 +249,15 @@ msgbox(['This feature allows for determination of modal participationg factors u
 end
 %
 
-
+%help on AISC Shapes
+if number==23   
+msgbox(['CUFSM operates as a centerline code, whereas AISC shapes may include fillets ',...
+		'and other details. This difference may lead to some inaccuracies in calculating ',...
+        'section properties such as area (A), moment of inertia about x-axis (Ixx), ',...
+        'and moment of inertia about z-axis (Izz) ... etc.'],...
+        'Help for AISC Shapes','help')
+end
+%
 
 
 %help on solution type
