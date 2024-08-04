@@ -74,20 +74,24 @@ axestemp=axes('Units','normalized','Position',[0.42 0.1 0.54 0.78],'visible','of
 %[prop,node,elem,halfwavelengths,springs,constraints,geom,cz]=templatecalc(CorZ,h,b1,b2,d1,d2,r1,r2,r3,r4,q1,q2,t,nh,nb1,nb2,nd1,nd2,nr1,nr2,nr3,nr4,kipin,centerline);
 %flags:[node# element# mat# stress# stresspic coord constraints springs origin] 1 means show
 section_type_String = 'W';
+hdf5_filename = 'all_complex_sections_data.h5';
 save('helpers\complex_sections_data\section_type_String', 'section_type_String');
-[labels,data] = complexdata();
-complex_folderPath = 'helpers\complex_sections_data\';
+[labels, ~] = complexdata();
+%complex_folderPath = 'helpers\complex_sections_data\';
 section_id = labels(1);
 sectionString = section_id{1};
+
+% Construct the dataset name
+dataset_name_node = ['/' sectionString '-node'];
+dataset_name_elem = ['/' sectionString '-elem'];
+dataset_name_constraints = ['/' sectionString '-constraints'];
 % Construct the full file path
 unitsystemunit = 1;
 save('helpers\complex_sections_data\unitsystemunit', 'unitsystemunit');
-fullFilePath_node = [complex_folderPath sectionString '-node.csv'];
-fullFilePath_elem = [complex_folderPath sectionString '-elem.csv'];
-fullFilePath_constraints = [complex_folderPath sectionString '-constraints.csv'];
-node = readmatrix(fullFilePath_node);
-elem = readmatrix(fullFilePath_elem);
-constraints = readmatrix(fullFilePath_constraints);
+% Read the data from the HDF5 file
+node = h5read(hdf5_filename, dataset_name_node);
+elem = h5read(hdf5_filename, dataset_name_elem);
+constraints = h5read(hdf5_filename, dataset_name_constraints);
 springs=0;
 flags=[0 0 0 0 0 0 0 0 1];
 crossect(node,elem,axestemp,springs,constraints,flags);

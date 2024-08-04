@@ -175,26 +175,21 @@ unitsystemunit = 1;
 save('helpers\complex_sections_data\unitsystemunit', 'unitsystemunit');
 
 index=get(sfia,'Value');
-[labels,data] = complexdata();
-complex_folderPath = 'helpers\complex_sections_data\';
+hdf5_filename = 'all_complex_sections_data.h5';
+[labels, ~] = complexdata();
+%complex_folderPath = 'helpers\complex_sections_data\';
 section_id = labels(index);
 % Extract the string from the cell array
 sectionString = section_id{1};
 
-% Construct the full file path
-fullFilePath_node = [complex_folderPath sectionString '-node.csv'];
-fullFilePath_elem = [complex_folderPath sectionString '-elem.csv'];
-fullFilePath_constraints = [complex_folderPath sectionString '-constraints.csv'];
+% Construct the dataset name
+dataset_name_node = ['/' sectionString '-node'];
+dataset_name_elem = ['/' sectionString '-elem'];
+dataset_name_constraints = ['/' sectionString '-constraints'];
 
-
-% Combine with the current directory to form the full file path
-% fullFilePath_node = fullfile(pwd, fullFilePath_node);
-% fullFilePath_elem = fullfile(pwd, fullFilePath_elem);
-% fullFilePath_constraints = fullfile(pwd, fullFilePath_elem);
-
-node = readmatrix(fullFilePath_node);
-elem = readmatrix(fullFilePath_elem);
-constraints = readmatrix(fullFilePath_constraints);
+node = h5read(hdf5_filename, dataset_name_node);
+elem = h5read(hdf5_filename, dataset_name_elem);
+constraints = h5read(hdf5_filename, dataset_name_constraints);
 saveFileName_node = 'complex_node.mat';
 saveFileName_elem = 'complex_elem.mat';
 saveFileName_constraints = 'complex_constraints.mat';
@@ -246,16 +241,17 @@ set(Nmm,'Value',1);
 unitsystemunit = 25.4;
 save('helpers\complex_sections_data\unitsystemunit', 'unitsystemunit');
 index=get(sfia,'Value');
-[labels,data] = complexdata();
+hdf5_filename = 'all_complex_sections_data.h5';
+[labels, ~] = complexdata();
 complex_folderPath = 'helpers\complex_sections_data\';
 section_id = labels(index);
 % Extract the string from the cell array
 sectionString = section_id{1};
 
-% Construct the full file path
-fullFilePath_node = [complex_folderPath sectionString '-node.csv'];
-fullFilePath_elem = [complex_folderPath sectionString '-elem.csv'];
-fullFilePath_constraints = [complex_folderPath sectionString '-constraints.csv'];
+% Construct the dataset name
+dataset_name_node = ['/' sectionString '-node'];
+dataset_name_elem = ['/' sectionString '-elem'];
+dataset_name_constraints = ['/' sectionString '-constraints'];
 
 
 % Combine with the current directory to form the full file path
@@ -263,9 +259,9 @@ fullFilePath_constraints = [complex_folderPath sectionString '-constraints.csv']
 % fullFilePath_elem = fullfile(pwd, fullFilePath_elem);
 % fullFilePath_constraints = fullfile(pwd, fullFilePath_elem);
 
-node = readmatrix(fullFilePath_node);
-elem = readmatrix(fullFilePath_elem);
-constraints = readmatrix(fullFilePath_constraints);
+node = h5read(hdf5_filename, dataset_name_node);
+elem = h5read(hdf5_filename, dataset_name_elem);
+constraints = h5read(hdf5_filename, dataset_name_constraints);
 saveFileName_node = 'complex_node.mat';
 saveFileName_elem = 'complex_elem.mat';
 saveFileName_constraints = 'complex_constraints.mat';
@@ -444,26 +440,22 @@ case 13
 % complex_sections_cb(9); %outer
 % complex_sections_cb(11); %round corners
 index=get(sfia,'Value');
-[labels,data] = complexdata();
+hdf5_filename = 'all_complex_sections_data.h5';
+[labels, ~] = complexdata();
 complex_folderPath = 'helpers\complex_sections_data\';
 section_id = labels(index);
 % Extract the string from the cell array
 sectionString = section_id{1};
 
-% Construct the full file path
-fullFilePath_node = [complex_folderPath sectionString '-node.csv'];
-fullFilePath_elem = [complex_folderPath sectionString '-elem.csv'];
-fullFilePath_constraints = [complex_folderPath sectionString '-constraints.csv'];
+% Construct the dataset name
+dataset_name_node = ['/' sectionString '-node'];
+dataset_name_elem = ['/' sectionString '-elem'];
+dataset_name_constraints = ['/' sectionString '-constraints'];
 
-
-% Combine with the current directory to form the full file path
-% fullFilePath_node = fullfile(pwd, fullFilePath_node);
-% fullFilePath_elem = fullfile(pwd, fullFilePath_elem);
-% fullFilePath_constraints = fullfile(pwd, fullFilePath_elem);
-
-node = readmatrix(fullFilePath_node);
-elem = readmatrix(fullFilePath_elem);
-constraints = readmatrix(fullFilePath_constraints);
+% Read the data from the HDF5 file
+node = h5read(hdf5_filename, dataset_name_node);
+elem = h5read(hdf5_filename, dataset_name_elem);
+constraints = h5read(hdf5_filename, dataset_name_constraints);
 saveFileName_node = 'complex_node.mat';
 saveFileName_elem = 'complex_elem.mat';
 saveFileName_constraints = 'complex_constraints.mat';
