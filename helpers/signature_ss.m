@@ -22,5 +22,5 @@ iBC='S-S';
 for i=1:length(hlengths)
     im_all{i}=[1];
 end
-[icurve,ishapes]=strip(prop,node,elem,hlengths,isprings,iconstraints,iGBTcon,iBC,im_all,10);
+[icurve,ishapes]=stripmain(prop,node,elem,hlengths,isprings,iconstraints,iGBTcon,iBC,im_all,10);
 
