@@ -1,0 +1,68 @@
+cff-version: 1.2.0
+message: >
+  If you use CUFSM, please cite the software using the reference below. 
+  Additionally, consider citing the related academic papers.
+title: CUFSM
+version: 5.50
+doi: 10.xxxx/zenodo.xxxxx  # This will be updated with Zenodo DOI at next new release
+authors:
+  - family-names: Schafer
+    given-names: Benjamin W.
+    orcid: 0000-0002-5375-3511
+  - family-names: Ádány
+    given-names: Sandor
+  - family-names: Li
+    given-names: Zhanjie
+  - family-names: Jin
+    given-names: Sheng
+keywords:
+  - cold-formed steel
+  - finite strip method
+  - buckling analysis
+  - structural engineering
+  - constrained finite strip
+date-released: 2025-01-16  # date of last update to this CFF file
+url: https://github.com/thinwalled/cufsm-git  # Replace with your GitHub repository URL
+references:
+  - type: article
+    authors:
+      - family-names: Schafer
+        given-names: Benjamin W.
+      - family-names: Li
+        given-names: Zhanjie
+    title: >
+      Buckling analysis of cold-formed steel members with general boundary conditions using CUFSM:
+      conventional and constrained finite strip methods
+    journal: Proceedings of the 20th International Specialty Conference on Cold-Formed Steel Structures
+    year: 2010
+    month: 11
+    pages: 17-32
+    url: https://scholarsmine.mst.edu/isccss/20iccfss/20iccfss-session1/2/
+  - type: article
+    authors:
+      - family-names: Schafer
+        given-names: Benjamin W.
+      - family-names: Ádány
+        given-names: Sandor
+    title: >
+      Buckling analysis of cold-formed steel members using CUFSM:
+      conventional and constrained finite strip methods
+    journal: Proceedings of the Eighteenth International Specialty Conference on Cold-Formed Steel Structures
+    year: 2006
+    month: 10
+    pages: 39-54
+    url: https://scholarsmine.mst.edu/isccss/18iccfss/18iccfss-session1/2/
+  - type: article
+    authors:
+      - family-names: Jin
+        given-names: Sheng
+      - family-names: Ádány
+        given-names: Sandor
+      - family-names: Schafer
+        given-names: Benjamin W.
+    title: >
+      Constrained Finite Strip Method: kinematic- and force-based approaches
+    journal: Proceedings of the Annual Stability Conference, Structural Stability Research Council
+    year: 2024
+    month: 4
+    url: https://aisc.s3-us-east-2.amazonaws.com/SSRC/2024/Jin_et_al_SSRC_2024.pdf
