@@ -10,7 +10,7 @@ CUFSM - is the Constrained and Unconstrained Finite Strip Method - and provides 
 
 The latest version of the software is available for download on [the latest release page](https://github.com/thinwalled/cufsm-git/releases). The software is provided as both (1) the MATLAB source code and (2) compiled standalone applications. For researchers, students, or anyone with access to MATLAB, it is highly recommended to use the source code directly in MATLAB, this is much more stable and manageable.
 
-Note installation of tha standalone version (PC or Mac) will also require downloading of libraries from Matlab (Mathworks). In addition, be patient at boot up of the standalone version it takes a few moments for the code to load.
+Note installation of the standalone version (PC or Mac) will also require downloading of libraries from Matlab (Mathworks). In addition, be patient at boot up of the standalone version it takes a few moments for the code to load.
 
 Note installation of the matlab app version will place an icon for cufsm in the matlab app toolbar and allow users to use the GUI without knowing underlying file structures etc., Anyone using cufsm for research, or in batch mode, should use the source files. Open cufsm5.m and modify your direectly location of installation and then run cufsm5 from the command line in matlab to start the GUI.
 
