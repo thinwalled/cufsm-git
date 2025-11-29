@@ -1,5 +1,9 @@
 # News
 
+## Version 5.66 - 11/29/2025
+
+- Correcting font issues related to Matlab 2025b, no longer handles symbol font the same, many titles etc. have to be corrected.
+   
 ## Version 5.65 - 07/20/2024
 
 - Help messages refreshed and reworked, all in-program help moved to linked html
