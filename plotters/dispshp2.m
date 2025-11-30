@@ -178,7 +178,7 @@ dispmax=(max(abs(mode(:,:))));
 membersize=max(max(node(:,2:3)))-min(min(node(:,2:3)));
 scale=scalem*1/10*membersize/dispmax;
 
-watchon;
+%watchon;
 %
 %
 %
@@ -601,5 +601,5 @@ hZoom=zoom;
 setAxes3DPanAndZoomStyle(hZoom,gca,'camera');
 hold off
 axis equal
-watchoff
+%watchoff
 end
