@@ -310,13 +310,15 @@ p2c = uipushtool(t,'TooltipString','Print Screen',...
                 load printdoc
                 p2c.CData = cdata;
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 % %Input
 spacer = uipushtool(t);
                 [img,map] = imread('one.png','BackgroundColor',[0.94 0.94 0.94]);
@@ -355,9 +357,10 @@ p4e = uipushtool(t,'TooltipString','constrained Finite Strip Method',...
                 p4e.CData = icon;
 % %Analysis
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
                 [img,map] = imread('two.png','BackgroundColor',[0.94 0.94 0.94]);
                 icon = img;
@@ -385,9 +388,10 @@ else
 end
 % %Output
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
                 [img,map] = imread('three.png','BackgroundColor',[0.94 0.94 0.94]);
                 icon = img;
@@ -408,17 +412,20 @@ p5c = uipushtool(t,'TooltipString','Section Properties',...
                 p5c.CData = icon;
 %%Extras
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 p6aa = uipushtool(t,'Tooltip','Plastic Surface Builder',...
                 'Separator','on',...
                 'ClickedCallback',[...
@@ -462,17 +469,20 @@ p6c = uipushtool(t,'Tooltip','CUTWP (Global Buckling Only)',...
 %                p6d.CData = icon;
 % %View
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 p3a = uitoggletool(t,'TooltipString','Pan',...
                 'Separator','on',...
                 'ClickedCallback',[...
@@ -494,9 +504,10 @@ p3c = uitoggletool(t,'TooltipString','Rotate',...
 				rotate3d off
 % %CUFSM
 spacer = uipushtool(t);
-                [img,map] = imread('blank.png','BackgroundColor',[0.94 0.94 0.94]);
-                icon = img;
-                spacer.CData = icon;
+                %[img,map] = imread('blank.png');%,'BackgroundColor',[0.94 0.94 0.94]);
+                %icon = img;
+                %spacer.CData = icon;
+                spacer.CData = NaN(16,16,3);  % transparent spacer
 p1a = uipushtool(t,'TooltipString','Help',...
                 'ClickedCallback',[...
                 'commandbar_cb(200);']);
