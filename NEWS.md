@@ -3,6 +3,7 @@
 ## Version 5.66 - 11/29/2025
 
 - Correcting font issues related to Matlab 2025b, no longer handles symbol font the same, many titles etc. have to be corrected.
+- Created compiled versions for Mac and PC
    
 ## Version 5.65 - 07/20/2024
 
