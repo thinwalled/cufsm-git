@@ -105,7 +105,7 @@ for i=1:length(filedisplay)
             load1=curve_sign(m,2);
             load2=curve_sign(m+1,2);
             load3=curve_sign(m+2,2);
-            if (load2<load1)&(load2<=load3)
+            if (load2<load1)&(load2<load3)
                 cr=cr+1;
                 hold on
                 hndl2(cr)=plot(curve_sign(m+1,1),curve_sign(m+1,2),'o');

@@ -25,6 +25,8 @@ else
     GBTcon.couple=[];
     GBTcon.norm=[];
     clas=[];
+    BC=[];
+    m_all=[];
     
     %to be compatible with older version
     GBTcon.basis=[];
