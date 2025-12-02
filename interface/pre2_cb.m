@@ -167,6 +167,42 @@ set(ed_elem,'String',sprintf('%i %i %i %.6f %i\n',elem'));
 pre2_cb(3)
 %-------------------------------------------------------------------
 %
+case 106
+%-------------------------------------------------------------------
+%Add a corner fillet
+node=str2num(get(ed_node,'String'));
+elem=str2num(get(ed_elem,'String'));
+prompt={'Element 1:','Element 2:','radius:','number of segments:'};
+   def={'NaN','NaN',num2str(2*elem(1,4)),'4'};
+   dlgTitle='Add a corner fillet between elements';
+   lineNo=[1 100];
+answer=inputdlg(prompt,dlgTitle,lineNo,def);
+e1=str2num(answer{1});
+e2=str2num(answer{2});
+r=str2num(answer{3});
+nr=str2num(answer{4});
+[node2,elem2]=add_corner(node,elem,e1,e2,r,nr);
+subfig=figure;
+name=['CUFSM v',version,' -- Add Corner Cross-Section Confirmation'];
+set(subfig,'Name',name,'NumberTitle','off');
+set(subfig,'MenuBar','none');
+set(subfig,'position',[100 100 400 600])%
+axesconfirm=axes('Units','normalized','Position',[0.01 0.01 0.98 0.98],'visible','off');
+crossect(node2,elem2,axesconfirm,springs,constraints,flags);
+confirm=questdlg('Keep model with corner?','Corner fillet confirmation','Yes','No','No')
+switch confirm
+    case 'Yes'
+        node=node2;
+        elem=elem2;
+        close(subfig);
+    case 'No'
+        close(subfig);
+end
+set(ed_node,'String',sprintf('%i %.4f %.4f %i %i %i %i %.3f\n',node'));
+set(ed_elem,'String',sprintf('%i %i %i %.6f %i\n',elem'));
+pre2_cb(3)
+%-------------------------------------------------------------------
+%
 case 3
 %-------------------------------------------------------------------
 %update all quantities and plot
