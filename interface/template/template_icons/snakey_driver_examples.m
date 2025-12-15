@@ -294,4 +294,28 @@ prop=[9 29500.00 29500.00 0.30 0.30 11346.15];
 lengths=[]; springs=0; constraints=0;
 save('L_test', 'prop', 'node', 'elem', 'lengths', 'springs', 'constraints')
 
+%General shape
+clear strips
+d=2;
+b=4;
+h=6;
+t=0.1;
+r=2*t;
+%straight line segments (centerline)
+strips.l= [d b h b d];
+strips.q= [270 180 45 90 0]*pi/180;
+strips.n= [2 4 8 4 2];
+strips.t= [t t t t t]; 
+strips.id=[100 100 100 100 100];
+strips.closed=false; %open shape
+%corner radius between segments (if desired)
+strips.r=[r r r r]; 
+strips.rn=[4 4 4 4];
+strips.rt=[t t t t];
+strips.rid=[100 100 100 100];
+%call snakey to generate strips
+[node,elem]=snakey(strips);
+prop=[100 29500.00 29500.00 0.30 0.30 11346.15];
+lengths=[]; springs=0; constraints=0;
+save('general_test', 'prop', 'node', 'elem', 'lengths', 'springs', 'constraints')
 

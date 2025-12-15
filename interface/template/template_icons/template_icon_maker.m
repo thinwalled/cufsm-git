@@ -15,9 +15,12 @@ matFiles = {
 'T_test.mat'		
 'lippedc_test.mat'
 'L_test.mat'
+'general_test.mat'
     };
 
-outDir = 'template_icons';
+%outDir = 'template_icons';
+outDir = fileparts(mfilename('fullpath'));
+
 if ~exist(outDir,'dir'), mkdir(outDir); end
 
 for k = 1:numel(matFiles)
@@ -25,7 +28,6 @@ for k = 1:numel(matFiles)
     pngFile = fullfile(outDir, ['icon_' name '.png']);
     make_cufsm_template_icon(matFiles{k}, pngFile, 128);
 end
-
 
 
 function make_cufsm_template_icon(matFile, pngFile, iconSize)

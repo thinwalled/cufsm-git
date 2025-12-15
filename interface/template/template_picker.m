@@ -21,10 +21,11 @@ function templateID = template_picker(iconDir)
         'icon_lippedz_test.png',  'Lipped Zee',       'lippedz';
         'icon_Ndeck_test.png',    'N Deck',           'ndeck';
         'icon_L_test.png',        'Angle',            'angle';
-        'icon_I_test.png',        'I',                'isect';
-        'icon_T_test.png',        'T',                'tee';
+        'icon_I_test.png',        'I Section',        'isect';
+        'icon_T_test.png',        'T Section',        'tee';
         'icon_RHS_test.png',      'RHS / SHS',        'rhs';
         'icon_chs_test.png',      'CHS',              'chs';
+        'icon_general_test.png',       'General',          'general';
     };
 
     nTemplates = size(templates,1);

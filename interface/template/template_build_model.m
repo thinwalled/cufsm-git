@@ -513,6 +513,59 @@ switch lower(templateID)
         %package up for output back to template
         model=make_model(templateID,P,strips,node,elem,stripsD,nodeD,elemD,lengths);
 
+    case 'general'
+        % User-defined open, singly-branched polyline (centerline)
+        l_deg   = P.section.l(:)';       % row
+        th_deg  = P.section.theta(:)';   % degrees, absolute
+        t_vec   = P.section.t(:)';       % row
+        n_vec   = P.section.n(:)';       % row
+        r0      = P.section.r;           % single corner radius (centerline)
+        % Basic validation / cleanup
+        % Remove any zero/NaN length rows
+        good = isfinite(l_deg) & isfinite(th_deg) & isfinite(t_vec) & isfinite(n_vec) & (l_deg > 0);
+        l_deg  = l_deg(good);
+        th_deg = th_deg(good);
+        t_vec  = t_vec(good);
+        n_vec  = n_vec(good);
+        if isempty(l_deg)
+            error('General template: no valid segments. Provide at least one row with l>0.');
+        end
+        % Build strips
+        strips.l      = l_deg;
+        strips.q      = th_deg * pi/180;                 % degrees -> radians
+        strips.n      = max(1, round(n_vec)) * max(1,nseg);
+        strips.t      = t_vec;
+        strips.id     = mid * ones(size(strips.l));
+        strips.closed = false;
+        % Corner radii between adjacent segments (N-1 corners)
+        if numel(strips.l) >= 2 && isfinite(r0) && r0 > 0
+            strips.r   = r0 * ones(1, numel(strips.l)-1);
+            strips.rn  = 4  * ones(1, numel(strips.l)-1);
+            % For now, use "adjacent thickness" convention (take t of the *first* segment)
+            strips.rt  = strips.t(1:end-1);
+            strips.rid = mid * ones(1, numel(strips.l)-1);
+        else
+            strips.r   = [];
+            strips.rn  = [];
+            strips.rt  = [];
+            strips.rid = [];
+        end
+        % Build model
+        [node, elem] = snakey(strips);
+        % Dimensioning model: sharp, one element per segment
+        stripsD       = strips;
+        stripsD.n     = 0*strips.n + 1;
+        stripsD.r     = [];
+        stripsD.rn    = [];
+        stripsD.rt    = [];
+        stripsD.rid   = [];
+        [nodeD, elemD] = snakey(stripsD);
+        % Lengths (same logic)
+        lengths = make_lengths(strips, nlen);
+        %make the model
+        model = make_model(templateID, P, strips, node, elem, stripsD, nodeD, elemD, lengths);
+
+
     otherwise
         error('build_strips_from_params:unknownTemplate',...
               'Template "%s" not implemented yet.',templateID);

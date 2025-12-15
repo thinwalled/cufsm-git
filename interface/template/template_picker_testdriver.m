@@ -34,4 +34,6 @@ switch choice
         template_section_gui(choice,[]);
     case 'angle'
         template_section_gui(choice,[]);
+    case 'general'
+        template_section_gui(choice,[]);
 end

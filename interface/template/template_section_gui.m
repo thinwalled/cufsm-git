@@ -78,8 +78,10 @@ axis(S.ax,'equal'); axis(S.ax,'off');
 S.btnPlotOptions = uicontrol('Parent',fig,...
           'Style','pushbutton',...
           'Units','normalized',...
-          'Position',[0.98-0.10 0.96-0.035 0.10 0.035],...  
-          'String','Plot options',...
+          'Position',[0.98-0.03 0.96-0.025 0.03 0.025],...  
+          'String','...',...
+          'TooltipString','plot options',...
+          'FontName','Helvetica','FontSize',10,...
           'Callback',@(src,evt) togglePlotOptions(fig));
 
 % plot options panel directly below that button, hidden by default
@@ -225,50 +227,223 @@ end  % template_section_gui main
 
 %====================================================================
 function buildParamFields(fig)
-% Build the editable fields in S.paramPanel from get_section_param_defs
-
 S = guidata(fig);
 
-% clear old controls
-delete(get(S.paramPanel,'Children'));
-
-% get template-specific param list
-S.paramDefs = template_section_params(S.templateID);
-
-n = size(S.paramDefs,1);
+delete(get(S.paramPanel,'Children'));   % clear panel contents
 S.paramEdits = struct();
+S.paramDefs  = [];
 
-% layout: 1 column of label+edit pairs, top to bottom
-y0 = 0.88;
-dy = 0.105;
+if strcmpi(S.templateID,'general')
+    buildGeneralFields(fig);   % NEW
+    return;
+else
+    % existing behavior
+    S.paramDefs = template_section_params(S.templateID);
 
-for k = 1:n
-    fieldName = S.paramDefs{k,1};
-    label     = S.paramDefs{k,2};
-    defVal    = S.paramDefs{k,3};
+    n = size(S.paramDefs,1);
+    y0 = 0.88;
+    dy = 0.105;
 
-    y = y0 - (k-1)*dy;
+    for k = 1:n
+        fieldName = S.paramDefs{k,1};
+        label     = S.paramDefs{k,2};
+        defVal    = S.paramDefs{k,3};
+        y = y0 - (k-1)*dy;
 
-    % label
-    uicontrol('Parent',S.paramPanel,'Style','text',...
-              'Units','normalized',...
-              'Position',[0.05 y 0.55 0.08],...
-              'String',label,...
-              'HorizontalAlignment','left',...
-              'BackgroundColor',get(fig,'Color'));
+        uicontrol('Parent',S.paramPanel,'Style','text',...
+            'Units','normalized','Position',[0.05 y 0.55 0.08],...
+            'String',label,'HorizontalAlignment','left',...
+            'BackgroundColor',get(fig,'Color'));
 
-    % edit
-    hEdit = uicontrol('Parent',S.paramPanel,'Style','edit',...
-              'Units','normalized',...
-              'Position',[0.65 y 0.30 0.10],...
-              'String',num2str(defVal),...
-              'Tag',fieldName,...
-              'Callback',@(src,evt) onParamChanged(src,evt,fig));
+        hEdit = uicontrol('Parent',S.paramPanel,'Style','edit',...
+            'Units','normalized','Position',[0.65 y 0.30 0.10],...
+            'String',num2str(defVal),'Tag',fieldName,...
+            'Callback',@(src,evt) onParamChanged(src,evt,fig));
 
-    S.paramEdits.(fieldName) = hEdit;
+        S.paramEdits.(fieldName) = hEdit;
+    end
 end
 
 guidata(fig,S);
+end
+% function buildParamFields(fig)
+% % Build the editable fields in S.paramPanel from get_section_param_defs
+% 
+% S = guidata(fig);
+% 
+% % clear old controls
+% delete(get(S.paramPanel,'Children'));
+% 
+% % get template-specific param list
+% S.paramDefs = template_section_params(S.templateID);
+% 
+% n = size(S.paramDefs,1);
+% S.paramEdits = struct();
+% 
+% % layout: 1 column of label+edit pairs, top to bottom
+% y0 = 0.88;
+% dy = 0.105;
+% 
+% for k = 1:n
+%     fieldName = S.paramDefs{k,1};
+%     label     = S.paramDefs{k,2};
+%     defVal    = S.paramDefs{k,3};
+% 
+%     y = y0 - (k-1)*dy;
+% 
+%     % label
+%     uicontrol('Parent',S.paramPanel,'Style','text',...
+%               'Units','normalized',...
+%               'Position',[0.05 y 0.55 0.08],...
+%               'String',label,...
+%               'HorizontalAlignment','left',...
+%               'BackgroundColor',get(fig,'Color'));
+% 
+%     % edit
+%     hEdit = uicontrol('Parent',S.paramPanel,'Style','edit',...
+%               'Units','normalized',...
+%               'Position',[0.65 y 0.30 0.10],...
+%               'String',num2str(defVal),...
+%               'Tag',fieldName,...
+%               'Callback',@(src,evt) onParamChanged(src,evt,fig));
+% 
+%     S.paramEdits.(fieldName) = hEdit;
+% end
+% 
+% guidata(fig,S);
+% end
+
+%====================================================================
+function buildGeneralFields(fig)
+S = guidata(fig);
+
+% Column headers: ℓ, θ, t, n
+colNames = {char(8467), char(952), 't', 'n'};   % ℓ and θ in unicode
+colFormat = {'numeric','numeric','numeric','numeric'};
+colEditable = [true true true true];
+
+% reasonable default starter rows for genral case
+data = [
+    2    270   0.1   2
+    4    180   0.1   4
+    6     45   0.1   8
+    4     90   0.1   4
+    2      0   0.1   2
+];
+
+% --- Table (slightly narrower to make room for buttons) ---
+S.paramEdits.generalTable = uitable('Parent',S.paramPanel,...
+    'Units','normalized',...
+    'Position',[0.05 0.18 0.82 0.75],...   % was 0.90 wide → now 0.82
+    'Data',data,...
+    'ColumnName',colNames,...
+    'ColumnFormat',colFormat,...
+    'ColumnEditable',colEditable,...
+    'RowName',[],...
+    'CellSelectionCallback',@(src,evt) onGeneralSelectRow(src,evt,fig),...
+    'CellEditCallback',@(src,evt) onParamChanged(src,evt,fig));
+
+% --- Button column on right of table ---
+btnX = 0.89;     % column x
+btnW = 0.07;     % button width
+btnH = 0.08;     % button height
+btnY0 = 0.82;    % top button y
+btnDY = 0.10;    % spacing
+
+S.paramEdits.btnAddRow = uicontrol('Parent',S.paramPanel,'Style','pushbutton',...
+    'Units','normalized','Position',[btnX btnY0 btnW btnH],...
+    'String','+',...                  % simple, readable
+    'FontSize',12,...
+    'TooltipString','Add row',...
+    'Callback',@(src,evt) onGeneralAddRow(fig));
+
+S.paramEdits.btnDelRow = uicontrol('Parent',S.paramPanel,'Style','pushbutton',...
+    'Units','normalized','Position',[btnX btnY0-btnDY btnW btnH],...
+    'String','-',...
+    'FontSize',12,...
+    'TooltipString','Delete selected row',...
+    'Callback',@(src,evt) onGeneralDeleteRow(fig));
+
+S.paramEdits.btnClear = uicontrol('Parent',S.paramPanel,'Style','pushbutton',...
+    'Units','normalized','Position',[btnX btnY0-2*btnDY btnW btnH],...
+    'String',char(8634),...            % ⟲ (looks like "reset/clear")
+    'FontSize',12,...
+    'TooltipString','Clear table',...
+    'Callback',@(src,evt) onGeneralClearTable(fig));
+
+% "centerline corner radius, r ="
+uicontrol('Parent',S.paramPanel,'Style','text',...
+    'Units','normalized','Position',[0.05 0.06 0.50 0.08],...
+    'String','centerline corner radius, r =',...
+    'HorizontalAlignment','right',...
+    'BackgroundColor',get(fig,'Color'));
+
+S.paramEdits.r = uicontrol('Parent',S.paramPanel,'Style','edit',...
+    'Units','normalized','Position',[0.56 0.06 0.16 0.10],...
+    'String','0',...
+    'Callback',@(src,evt) onParamChanged(src,evt,fig));
+
+guidata(fig,S);
+end
+
+%====================================================================
+function onGeneralSelectRow(src, evt, fig)
+S = guidata(fig);
+if isempty(evt.Indices)
+    set(src,'UserData',[]);
+else
+    set(src,'UserData',evt.Indices(1)); % store selected row
+end
+guidata(fig,S);
+end
+
+%====================================================================
+function onGeneralAddRow(fig)
+S = guidata(fig);
+T = get(S.paramEdits.generalTable,'Data');
+if isempty(T), T = zeros(0,4); end
+
+% default new row (carry last thickness, n if possible)
+newRow = [0 0 0.1 1];
+if size(T,1) >= 1
+    newRow(3) = T(end,3);
+    newRow(4) = T(end,4);
+end
+
+T = [T; newRow];
+set(S.paramEdits.generalTable,'Data',T);
+guidata(fig,S);
+onUpdatePreview(fig);
+end
+
+%====================================================================
+function onGeneralDeleteRow(fig)
+S = guidata(fig);
+hT = S.paramEdits.generalTable;
+
+T = get(hT,'Data');
+if isempty(T), return; end
+
+idx = get(hT,'UserData');  % we'll store last selected row here
+if isempty(idx) || idx < 1 || idx > size(T,1)
+    % if nothing selected, delete last row (least surprising)
+    idx = size(T,1);
+end
+
+T(idx,:) = [];
+set(hT,'Data',T);
+set(hT,'UserData',[]); % clear selection
+guidata(fig,S);
+onUpdatePreview(fig);
+end
+
+%====================================================================
+function onGeneralClearTable(fig)
+S = guidata(fig);
+set(S.paramEdits.generalTable,'Data',zeros(0,4));
+set(S.paramEdits.generalTable,'UserData',[]);
+guidata(fig,S);
+onUpdatePreview(fig);
 end
 
 
@@ -309,6 +484,32 @@ end
 
 % section-specific
 P.section = struct();
+
+if strcmpi(S.templateID,'general')
+    T = get(S.paramEdits.generalTable,'Data');
+
+    % drop fully-empty rows (common when user adds rows)
+    if isempty(T)
+        T = zeros(0,4);
+    end
+    % keep rows where at least one entry is nonzero/nonempty
+    keep = any(~isnan(T) & T~=0, 2);
+    T = T(keep,:);
+
+    P.section.l     = T(:,1);
+    P.section.theta = T(:,2);   % degrees
+    P.section.t     = T(:,3);
+    P.section.n     = T(:,4);
+
+    P.section.r = str2double(get(S.paramEdits.r,'String'));
+    if isnan(P.section.r) || P.section.r < 0
+        P.section.r = 0;
+    end
+
+    return; % skip normal template paramDefs parsing
+end
+
+%existing template
 for k = 1:size(S.paramDefs,1)
     fname = S.paramDefs{k,1};
     hEdit = S.paramEdits.(fname);
