@@ -5,6 +5,7 @@ function []=crossect(node,elem,axesnum,springs,constraints,flags)
 %December 2015 origin updated to also show axes
 %December 2015 added stress distribution into this plot instead of separate
 %December 2015 added an additional flag for section property axes
+%June 2026 debugging constraint plotting
 %plots the cross-section
 %
 %node: [node# x z dofx dofz dofy dofrot stress] nnodes x 8;
@@ -134,17 +135,21 @@ if constraintsflag==1
     	dofz=node(i,5);
     	dofy=node(i,6);
     	dofq=node(i,7);
-    	if min([dofx dofz dofy dofq])==0
+    	if min([dofx dofz dofy dofq])==0 %nodal constraint
     		plot(node(i,2),node(i,3),'sg')
     	end
     end
     if constraints==0
-    else
-        for i=1:size(constraints(:,1))
+    else %we have equation constraints to handle
+        for i=1:size(constraints,1)
             nodee=constraints(i,1); %eliminated node
             nodek=constraints(i,4); %kept node
-            plot(node(nodee,2),node(nodee,3),'xg')
-            plot(node(nodek,2),node(nodek,3),'hg')
+            if nodee==0|nodek==0
+                %nothing to plot
+            else
+                plot(node(nodee,2),node(nodee,3),'xg')
+                plot(node(nodek,2),node(nodek,3),'hg')
+            end
         end
     end
 end

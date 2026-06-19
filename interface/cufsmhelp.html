@@ -128,7 +128,7 @@ dofk = dof of the kept node (drives the expression)
 <p>For the the example of w10 = 1.0*w20, the user should enter </p>
 <pre>10 2 1.0 20 2</pre> 
 <p>which says node 10, degree of freedom 2 should be eliminated and set equal to 1.0 times node 20 degree of freedom 2. More complicated expression with multiple (k)ept degrees of freedom can be completed by adding additional columns. Eliminated degrees of freedom may not be used as kept degrees of freedom in any expression. Common use of this feature is to model an external strap where two portions of the model are forced to move together. Or, to partially restrict behavior to examine a particular mode.</p> 
-<p>MASTER_SLAVE: Use of the master-slave constraints button will allow you to slave any number of nodes to a master node. This allows rigid cross-section modes, and partial rigid cross-section modes to be modeled for example slave all nodes of a flange to the flange/web junction to enforce deformations similar to distortional buckling, or or slave all nodes to one single master node, to examine global torsional and flexural modes.</p> 
+<p>LEADER_FOLLOWER: Use of the leader-follower constraints button will allow you to force any number of follower nodes to a leader node. This allows rigid cross-section modes, and partial rigid cross-section modes to be modeled for example force all nodes of a flange to follow the flange/web junction as a leader to enforce deformations similar to distortional buckling, or or force all nodes as followeres to one single leader node, to examine global torsional and flexural modes.</p> 
 <p>All entries must have the same number of columns, trailing zeros may be added to the end of the entries.</p>
 
 

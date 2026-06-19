@@ -291,13 +291,13 @@ case 20
 %
 case 201
 %-------------------------------------------------------------------
-%Slave nodes to a master node
+%Slave nodes to a master node - renamed follower-leader
 node=str2num(get(ed_node,'String'));
 elem=str2num(get(ed_elem,'String'));
 constraints=str2num(get(ed_constraints,'String'));
-prompt={'Enter the master node:','Enter the nodes to be slaved to the master:'};
+prompt={'Enter the leader node:','Enter the nodes that will follow the leader:'};
    def={'4','1 2 3'};
-   dlgTitle='Slaving nodes to a master nodes';
+   dlgTitle='Leader-follower - Force follower nodes to match a leader node';
    lineNo=1;
    answer=inputdlg(prompt,dlgTitle,lineNo,def);
 master=str2num(answer{1});
