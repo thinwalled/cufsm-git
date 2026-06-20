@@ -51,9 +51,9 @@ xr = x - xcg;
 zr = z - zcg;
 
 % Principal coordinates.
-% Check sign convention against CUFSM's existing theta use.
-coord1 =  xr*cos(theta) + zr*sin(theta);
-coord2 = -xr*sin(theta) + zr*cos(theta);
+%prin_coord=inv([cos(th) -sin(th) ; sin(th) cos(th)])*[(xr)' ; (zr)'];
+coord1 =  xr*cos(theta) + zr*-sin(theta);
+coord2 =  xr*sin(theta) + zr*cos(theta);
 
 c1min = min(coord1);
 c1max = max(coord1);
@@ -70,11 +70,11 @@ extfiber.c2_p = c2max;
 extfiber.c2_m = -c2min;
 
 %Asymmetry parameters beta_s
-extfiber.beta_s.x_p=2*extfiber.cx_p/estfiber.dx; 
-extfiber.beta_s.x_m=2*extfiber.cx_m/estfiber.dx;
-extfiber.beta_s.z_p=2*extfiber.cz_p/estfiber.dz; 
-extfiber.beta_s.z_m=2*extfiber.cz_m/estfiber.dz;
-extfiber.beta_s.1_p=2*extfiber.c1_p/estfiber.d1;
-extfiber.beta_s.1_m=2*extfiber.c1_m/estfiber.d1;
-extfiber.beta_s.2_p=2*extfiber.c2_p/estfiber.d2; 
-extfiber.beta_s.2_m=2*extfiber.c2_m/estfiber.d2;
+extfiber.beta_s.x_p=2*extfiber.cx_p/extfiber.dx; 
+extfiber.beta_s.x_m=2*extfiber.cx_m/extfiber.dx;
+extfiber.beta_s.z_p=2*extfiber.cz_p/extfiber.dz; 
+extfiber.beta_s.z_m=2*extfiber.cz_m/extfiber.dz;
+extfiber.beta_s.one_p=2*extfiber.c1_p/extfiber.d1;
+extfiber.beta_s.one_m=2*extfiber.c1_m/extfiber.d1;
+extfiber.beta_s.two_p=2*extfiber.c2_p/extfiber.d2; 
+extfiber.beta_s.two_m=2*extfiber.c2_m/extfiber.d2;
