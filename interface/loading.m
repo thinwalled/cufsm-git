@@ -72,7 +72,7 @@ PhiPM=0;
 scale=1;
 maxstress=0;
 minstress=0;
-flags=[0 0 0 0 1 0 0 0 0 1];
+flags=[0 0 0 0 1 0 0 0 0 1 scale];
 %---------------end default calculations
 %
 %

@@ -62,6 +62,7 @@ switch num
         minstress=min([inode(:,8);0]);
         set(minstress_tex,'String',num2str(minstress));
         %strespic(inode,elem,axesstres,scale)
+        flags(11)=scale;
         crossect(inode,elem,axesstres,springs,constraints,flags)
         %
         %

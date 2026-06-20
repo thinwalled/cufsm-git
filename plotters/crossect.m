@@ -10,7 +10,7 @@ function []=crossect(node,elem,axesnum,springs,constraints,flags)
 %
 %node: [node# x z dofx dofz dofy dofrot stress] nnodes x 8;
 %elem: [elem# nodei nodej t mat#] nelems x 4;
-%flags:[node# element# mat# stress# stresspic coord constraints springs origin propaxis] 1 means show
+%flags:[node# element# mat# stress# stresspic coord constraints springs origin propaxis scale] 1 means show
 nodeflag=flags(1);
 elemflag=flags(2);
 matflag=flags(3);
@@ -25,6 +25,11 @@ if length(flags)>9 %new since 2015
 else
     propaxisflag=0;
 end
+if length(flags)>10
+    scale=flags(11);
+else
+    scale=1;
+end
 %
 %
 axes(axesnum)
@@ -32,7 +37,7 @@ cla
 %
 %preparation for stress distribution plotting
 if stresspicflag==1
-    scale=1;
+    %scale=1;
     maxstress=max(abs(node(:,8)));
     stress=[node(:,1) node(:,8)/maxstress];
     maxoffset=scale*1/10*max(max(abs(node(:,2:3))));
