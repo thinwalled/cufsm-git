@@ -1,5 +1,14 @@
 # News
 
+## Version 5.75 - 06/20/2026
+
+- Changed stress generation to extreme fiber for yield quantities
+- **This changes yield values and changes applied stress in FSM**
+- **Models with this change buckle at same stress, but moment changes**
+- **Aligns CUFSM with design calculations, but is a change from past**
+- Cleaned up plotting of constraints
+- Changed terminology to leader-follower for constraints
+
 ## Version 5.68 - 12/02/2025
 
 - Added a corner fillet button and supporting code to pre-processor

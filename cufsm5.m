@@ -52,7 +52,7 @@ end
 %%-----------------------------------------------------------------------------------
 %Title and menus
 %-----------------------------------------------------------------------------------
-version=['5.70'];
+version=['5.75'];
 name=['CUFSM v',version,' -- Constrained and Unconstrained Finite Strip Method (CUFSM) Buckling Analysis of Thin-Walled Members'];
 fig=figure('Name',name,...
    	'NumberTitle','off');

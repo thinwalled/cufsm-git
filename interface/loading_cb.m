@@ -133,7 +133,8 @@ switch num
             unsymm=1;
         end       
         %calculate new values for yield moments
-        [Py,Mxxy,Mzzy,M11y,M22y]=yieldMP(node,fy,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm);
+        %[Py,Mxxy,Mzzy,M11y,M22y]=yieldMP(node,fy,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm);
+        [Py,Mxxy,Mzzy,M11y,M22y]=yieldMP_extfiber(node,elem,fy,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm); %June 2026
         [By]=yieldB(fy,Cw,w);
         set(Pyedit,'String',num2str(Py));
         set(Byedit,'String',num2str(By));

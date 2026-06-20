@@ -59,7 +59,8 @@ thetap=thetap*180/pi; %degrees...
 %calculate initial values for yield moments - in 2024 changed to generalize
 %bending as the default instead of restrained axis bending
 unsymm=1; %use generalized bending (0 = assume restrained axis bending about x,z)
-[Py,Mxxy,Mzzy,M11y,M22y]=yieldMP(node,fy,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm);
+%[Py,Mxxy,Mzzy,M11y,M22y]=yieldMP(node,fy,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm);
+[Py,Mxxy,Mzzy,M11y,M22y]=yieldMP_extfiber(node,elem,fy,A,xcg,zcg,Ixx,Izz,Ixz,thetap,I11,I22,unsymm); %June 2026
 [By]=yieldB(fy,Cw,w);
 PonPy=P/Py';
 M11onM11y=M11/M11y;
