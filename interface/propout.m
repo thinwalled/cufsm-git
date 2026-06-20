@@ -2,7 +2,7 @@ function propout;
 %BWS
 %August 2000
 %Cross-Section Properties Output Screen
-%Add ability to export to mastan
+%Add ability to export to mastan - removed in v5.05
 %
 %general
 global fig screen prop node elem lengths curve shapes clas springs constraints GBTcon BC m_all neigs version screen
@@ -31,7 +31,8 @@ subfig=figure;
 name=['CUFSM v',version,' -- Properties of cross section'];
 set(subfig,'Name',name,'NumberTitle','off');
 set(subfig,'MenuBar','none');
-set(subfig,'position',[50 70 900 500])%
+set(subfig,'Units','normalized');
+set(subfig,'position',[0.05 0.05 0.80 0.60])%
 %
 %
 %Define the axis for the cross-section plots
@@ -52,6 +53,10 @@ else
     Bx=NaN;, By=NaN;
     %initial plot
     propplot(node,elem,xcg,zcg,thetap,axesprop)
+    %June 2026 replace propplot with crosssect and deprecate propplot
+    %plotflags:[node# element# mat# stress# stresspic coord constraints springs origin propaxis] 1 means show
+    plotflags=[0     0        0    0       0         0     1           1       1      1]; %see crosssect for the use of the different plotting flags
+    crossect(node,elem,axesprop,springs,constraints,plotflags);
     %
     %
     %SECTION PROPERTIES

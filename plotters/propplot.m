@@ -1,6 +1,8 @@
 function []=propplot(node,elem,xcg,zcg,thetap,axesnum)
 %BWS
 %October 2001 (last modified)
+%June 2026 deprecated and replaced by crossect - can be removed from future
+%versions once confirmed stable behavior.
 %
 axes(axesnum)
 cla

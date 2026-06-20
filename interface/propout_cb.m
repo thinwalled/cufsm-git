@@ -32,7 +32,9 @@ switch num
         %Basic or advanced properties display switch
         b_a=get(Bas_Adv,'Value');
         if b_a==1
-            propplot(node,elem,xcg,zcg,thetap,axesprop);
+            %propplot(node,elem,xcg,zcg,thetap,axesprop);
+            plotflags=[0     0        0    0       0         0     1           1       1      1]; %see crosssect for the use of the different plotting flags
+            crossect(node,elem,axesprop,springs,constraints,plotflags);
         else if b_a == 2
                 scale_w=str2num(get(scale_tex_w,'String'));
                 warppic(node,elem,scale_w,Xs,Ys,w,axesprop);
