@@ -6,7 +6,7 @@ function [curve,shapes,clas,curveL,shapesL,curveD,shapesD,curveG,shapesG]=stripm
 %cornerStrips: strip elements belong to curved corners.
 %curveL, curveD, curveG: L, D, and G buckling curves (load factors vs. lengths)
 %shapesL, shapesD, shapesG: L, D, and G mode shapes for each length
-%Feb. 8, 2024; Jun. 7, 2024. Sheng Jin
+%Feb. 8, 2024; Jun. 7, 2024; Mar. 31, 2026. Sheng Jin
 
 %HISTORY
 %June 2010, complete update to new Boundary conditions, Z. Li, B. Schafer
@@ -120,13 +120,6 @@ if nargin<12%There is no curved corner by default
 	cornerStrips=[];
 end
 cFSM_analysis=0;%switch off cFSM. This program tests fcFSM only
-%in fcFSM, user defined constraints (equation constraints and nodal DOF constraints)
-%will be handled based on a general algorithm which will be realized in the future versions.
-%Now we ignore them.
-if BCFlag~=0
-	fprintf('\nCurrently user defined constraints and internal (at node) B.C. are ignored in fcFSM.');
-	BCFlag=0;
-end
 
 curveL=cell(nlengths,1);
 shapesL=cell(nlengths,1);
@@ -349,29 +342,53 @@ while l<nlengths
     end
 	
 	%% ==additional settings for this fcFSM testing, #2=====
-	%For multiple longitudinal term problems, the C_L, J_D, J_GD should be multipalized
+	%For multiple longitudinal term problems, the C_L, J_D, J_GD should be duplicated along the diagonal directions
 	if totalm==1
 		J_GD=J_GD_oneFunc;
 		J_D=J_D_oneFunc;
-		C_L=C_L_oneFunc;
+		%C_L=C_L_oneFunc;
 	else
 		J_GD=zeros(size(J_GD_oneFunc)*totalm);
 		J_D=zeros(size(J_D_oneFunc)*totalm);
-		C_L=zeros(size(C_L_oneFunc)*totalm);
+		%C_L=zeros(size(C_L_oneFunc)*totalm);
 		for i=1:totalm
 			J_GD(size(J_GD_oneFunc,1)*(i-1)+1:size(J_GD_oneFunc,1)*i,size(J_GD_oneFunc,2)*(i-1)+1:size(J_GD_oneFunc,2)*i)=J_GD_oneFunc;
 			J_D(size(J_D_oneFunc,1)*(i-1)+1:size(J_D_oneFunc,1)*i,size(J_D_oneFunc,2)*(i-1)+1:size(J_D_oneFunc,2)*i)=J_D_oneFunc;
-			C_L(size(C_L_oneFunc,1)*(i-1)+1:size(C_L_oneFunc,1)*i,size(C_L_oneFunc,2)*(i-1)+1:size(C_L_oneFunc,2)*i)=C_L_oneFunc;
+			%C_L(size(C_L_oneFunc,1)*(i-1)+1:size(C_L_oneFunc,1)*i,size(C_L_oneFunc,2)*(i-1)+1:size(C_L_oneFunc,2)*i)=C_L_oneFunc;
 		end
-		C_L=sparse(C_L);
+		%C_L=sparse(C_L);
 	end
-	
-	%the construction of fcFSM D and G constraint matrices needs stiffness matrix, so they will be determined here
-	C_D=K\J_GD*J_D;% as explained in SecAnal_fcFSM.m, this is the constraint matrix of D mode class
-	%as explained in SecAnal_fcFSM.m, constraint matrix of G, [C_G], can be obtained as such:
-	J_G=null(C_D'*J_GD);
-	C_G=K\J_GD*J_G;
 
+	% %=========================================================================
+	% %if the modal definition is regarded as a problem unrelated to support conditions
+	% %the fcFSM D and G constraint matrices can be obtained as below
+	% C_D=K\J_GD*J_D;% as explained in SecAnal_fcFSM.m, this is the constraint matrix of D mode class
+	% %as explained in SecAnal_fcFSM.m, constraint matrix of G, [C_G], can be obtained as such:
+	% J_G=null(C_D'*J_GD);
+	% C_G=K\J_GD*J_G;
+	% %=========================================================================
+
+	% traditionally, supporting conditions are not considered in the modal definitions of G, D, and L
+	% but we highly recommend that they should be
+	% because the G, D, and L solutions can better represent the buckling properties of thin-walled members
+	% here lists the way introducing the supporting conditions in the fcFSM modal definitions.
+	K_B=R'*K*R; %reduced stiffness matrix
+
+	J_B_GD=R'*J_GD; 
+	J_B_D=J_B_GD*J_D;
+
+	C_B_L=null(J_B_GD');
+	C_B_GD=K_B\orth(J_B_GD);
+	C_B_D=K_B\orth(J_B_D);
+	C_GD_G=null(J_B_D'*C_B_GD);
+
+	C_D=R*C_B_D;
+	C_G=R*C_B_GD*C_GD_G;
+	C_L=R*C_B_L;
+	% modal definition job done. The operations of null() and orth() may incur some computational consumption in large models.
+	% Optimizations can be introduced into these operations, noticing the block construction form of the J_GD and J_D matrices.
+
+	
 	%perform L, D, and G modal buckling analyses
 	% L buckling
 	[tempMat_eigenMode,tempMat_eigenValue]=eigs(C_L'*K*C_L,C_L'*Kg*C_L,min([size(C_L,2),neigs]),'SM');

@@ -1,3 +1,8 @@
+20260331
+Now, all types of supporting conditions (end boundary conditions, springs, internal boundary conditions on the nodes, and user defined constraint equations) are compatible with this fcFSM.
+Traditionally, modal definitions of G, D, and L are irrelative to supporting conditions of a member.
+But in this fcFSM, supporting conditions are introduced in the modal definitions.
+The resulted G, D, and L solutions show better representations to the buckling properties of thin-walled members, please see the newly added examples "C_120X80X15X1_N5Uz=0_N10Ux=0" and "C_120X80X15X1_m=1to5_N5Uz=0_N7Ux=N15Uz".
 
 20240606
 Now multiple longitudinal terms can be considered.
