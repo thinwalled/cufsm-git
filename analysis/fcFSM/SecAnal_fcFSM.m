@@ -17,10 +17,6 @@ function [C_L,J_D,J_GD]=SecAnal_fcFSM(node,elem,cornerStrips)
 %J_D:A basis of [q] that are in equilibrium
 %	if [q] is in equilibrium, fcFSM considers the corresponding deformation as D class deformation.
 
-%Limitations of current version of fcFSM
-%1. User defined equation constraints are not supported, and DOF constraints on nodes are not supported.
-%		there will be a general fcFSM algorithm for arbitrary supporting conditions.
-
 nNd=size(node,1);%number of nodes
 xNd=node(:,2); %X- coordinates of nodes
 zNd=node(:,3); %Z- coordinates of nodes

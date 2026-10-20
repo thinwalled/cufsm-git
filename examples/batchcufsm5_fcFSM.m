@@ -30,6 +30,8 @@ nameExample='C_200X90X20X2_CurvedConer';
 nameExample='CircularTube_D100X1';
 nameExample='theDefaultSection';
 nameExample='C_120X80X15X1_m=1to20';
+nameExample='C_120X80X15X1_m=1to5_N5Uz=0_N7Ux=N15Uz';
+nameExample='C_120X80X15X1_N5Uz=0_N10Ux=0';
 
 %Please specify the index of the bucklig mode/curve to be plotted (1 for the lowest buckling; 2 and so on for higher buckling modes).
 modeindex=1;
