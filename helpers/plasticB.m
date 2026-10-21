@@ -1,5 +1,4 @@
 function [B_p, Z_w] = plasticB(F_y, node, elem, tol, max_num_iter)
-%PLASTICB Plastic bimoment of an open thin-walled cross-section (Issue #12)
 %
 %   [B_p, Z_w] = plasticB(F_y, node, elem)
 %   [B_p, Z_w] = plasticB(F_y, node, elem, tol, max_num_iter)
@@ -37,6 +36,10 @@ function [B_p, Z_w] = plasticB(F_y, node, elem, tol, max_num_iter)
 %       where w changes sign.
 %
 %   Reference for the plastic bimoment: Glauz (2023), CFSRC R-2023-05.
+% 
+%   Author:
+%      Damir Akchurin, Oct. 21, 2026
+% 
 
 if nargin < 4 || isempty(tol)
     tol = 1E-6;
